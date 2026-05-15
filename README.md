@@ -13,15 +13,24 @@
 
 ### 2. [Code Review 專家 (CR Skills)](./code-review/SKILL.md)
 **「程式碼是寫給人看的，只是順便能執行。」**
-- **邊界防守**：專抓 `null`、`undefined` 或潛在的 Memory Leak。
-- **語義化命名**：告別 `temp` 與 `data`，確保代碼具備自我解釋能力。
-- **分級回饋**：提供 `[BLOCKER]`, `[CHORE]`, `[IDEA]` 不同層級的精準建議。
+- **流程框架**：意圖理解 → 邏輯正確性 → 邊界與安全 → 效能 → 風格。
+- **邊界防守**：專抓 `null`、`0`、Race Condition 或潛在的 Memory Leak。
+- **後端專項**：N+1 問題、Collation 衝突、Queue 冪等性、API 設計規範。
+- **五級回饋**：`[BLOCKER]` `[WARNING]` `[CHORE]` `[IDEA]` `[PRAISE]` 精準分級。
 
-### 3. [UI 美學工匠 (UI-SKILL)](./ui-skill/SKILL.md)
+### 3. [前端工程技巧 (Frontend Engineering)](./frontend-design/SKILL.md)
+**「性能不是錦上添花，是基本盤。」**
+- **CSS 架構**：原子化 Class 復用、CSS Modules 隔離、防禦性 CSS。
+- **互動模式**：八種互動狀態、Modal/Popover 原生 API、鍵盤導航。
+- **響應式工程**：Mobile-first、Container Queries、輸入方式偵測。
+- **無障礙工程**：WCAG 對比度、Focus Ring、語義化標籤、44px 觸控目標。
+
+### 4. [UI 美學設計 (UI Aesthetic Design)](./ui-skill/SKILL.md)
 **「拒絕工程師審美的平庸 UI。」**
-- **呼吸感**：嚴格執行 **8px 網格系統**，讓畫面有序排列。
-- **視覺層次**：透過陰影、字重、間距打造高級感，而非死板的表格。
-- **交互靈魂**：Hover、Focus、Transition 是標配，讓操作有情感回饋。
+- **色彩理論**：OKLCH 色彩空間、染色中性灰、60-30-10 法則。
+- **空間設計**：4pt 間距系統、視覺層次（模糊測試）、語義化 Elevation。
+- **排版美學**：Modular Scale、Vertical Rhythm、字型配對原則。
+- **動效美學**：100/300/500 時長法則、指數曲線、感知速度設計。
 
 ---
 
@@ -37,6 +46,7 @@
 將本倉庫中的資料夾移動或連結至：
 `C:\Users\YourName\.gemini\antigravity\global_skills\global-rules`
 `C:\Users\YourName\.gemini\antigravity\global_skills\code-review`
+`C:\Users\YourName\.gemini\antigravity\global_skills\frontend-design`
 `C:\Users\YourName\.gemini\antigravity\global_skills\ui-skill`
 
 ### 專案級使用
@@ -45,10 +55,11 @@
 ## 📂 目錄結構
 ```text
 AntiGravity-Skill/
-├── global-rules/     # 執行邏輯與安全性
-├── code-review/      # 程式碼品質與 CR 規範
-├── ui-skill/         # UI/UX 美學與細節
-└── README.md         # 這裡就是起點
+├── global-rules/       # 執行邏輯、決策順序與安全性
+├── code-review/        # 程式碼品質、後端審查與 CR 規範
+├── frontend-design/    # 前端工程技巧、性能與無障礙
+├── ui-skill/           # UI 美學設計、色彩、排版與動效
+└── README.md           # 這裡就是起點
 ```
 
 ---

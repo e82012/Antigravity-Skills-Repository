@@ -1,45 +1,358 @@
 ---
-name: UI-SKILL (UI Craftsman & Aesthetic Skill)
-description: 融合現代 UI/UX 美學與 Claude-Code 工程規範，專注於高品質、一致性且具備韌性的前端實作
+name: UI-AESTHETIC (UI 美學設計)
+description: 專注於視覺美化、色彩理論、排版、空間設計、動效美學與 UX 寫作
 ---
 
-# UI 工匠與美學準則 (UI Craftsman & Aesthetic Skill)
+# UI 美學設計 (UI Aesthetic Design)
 
-## 1. 樣式復用與一致性 (Consistency & Reuse)
-- **原子化 Class 優先**：強制使用專案現有的 Tailwind/CSS Class。撰寫前必須掃描現有樣式，嚴禁重複造輪子。
-- **組件庫優先**：優先使用專案已有的 UI Kit (如 Shadcn UI, AntD, Radix)，確保行為邏輯一致。
-- **配置化色彩**：嚴禁使用隨機 HEX Code。所有顏色必須對應 `theme.colors` 或 Tailwind 預設色階，並確保支援 **Dark Mode (`dark:`)**。
-
----
-
-## 2. 衝突避免與工程隔離 (Isolation & Safety)
-- **命名衝突預防**：新增 Class 或組件前需全域搜索，確保不與現有樣式衝突。
-- **技術隔離策略**：優先使用 CSS Modules 或 Tailwind 的 `@layer` 指令。
-- **防破版設計 (Robustness)**：動態文字區塊必須考慮溢出情況，強制使用 `truncate` 或 `line-clamp`；容器應具備 `min-h` 或 `aspect-ratio` 以防止 Layout Shift。
+> **Version:** 1.0
+> **Last Updated:** 2026-05-15
+> **定位：** 色彩、排版、空間、動效美學、視覺工藝、UX 寫作
+> **姊妹 Skill：** `frontend-design` — 負責性能、CSS 架構、互動模式、響應式、無障礙工程
 
 ---
 
-## 3. 美學設計準則 (Design Aesthetics)
+## 1. 色彩與配色 (Color & Palette)
 
-### A. 呼吸感與網格系統 (Whitespace & Rhythm)
-- **8px 步進規範**：遵循 `p-4`, `m-2`, `gap-4` 等 8px 網格倍數，建立視覺節奏感。
-- **視覺重心**：透過 Padding 的差異化（如 Container 大於 Inner Element），引導使用者焦點。
+### 使用 OKLCH 色彩空間
 
-### B. 視覺層次與深度 (Hierarchy & Depth)
-- **資訊對比**：使用字重 (Font Weight) 和色彩透明度來區分重要性。
-  - 主標：`text-slate-900 font-semibold`
-  - 次標：`text-slate-600 font-medium`
-  - 內文：`text-slate-500`
-- **現代陰影**：使用分層陰影（如 `shadow-sm` 用於靜態卡片，`shadow-xl` 用於彈窗），營造真實的 Z 軸層次感。
+**停止使用 HSL。** OKLCH 是感知均勻的——相等的亮度步進看起來確實相等，不像 HSL 中 50% 亮度的黃色看起來很亮，而 50% 的藍色看起來很暗。
 
-### C. 現代細節與交互工藝 (Modern Touches & Craft)
-- **巢狀圓角 (Nested Radius)**：遵循內外比例，當外層容器使用 `rounded-xl` 時，內層元件應對應縮減為 `rounded-lg` 或 `rounded-md`。
-- **細膩邊框 (Subtle Borders)**：優先使用帶透明度的邊框（如 `border-slate-200/50`），增加元件在不同背景下的融合感。
-- **狀態感知 (State Awareness)**：
-  - **交互回饋**：點擊元素必備 `hover:bg-opacity-80` 與微幅 `active:scale-[0.98]`。
-  - **效能優化**：過渡效果應限制在特定屬性（如 `transition-colors`），而非全域 `transition-all`。
+```css
+/* OKLCH: lightness (0-100%), chroma (0-0.4+), hue (0-360) */
+--color-primary: oklch(60% 0.15 250);      /* 藍色 */
+--color-primary-light: oklch(85% 0.08 250); /* 同色相，更亮 */
+--color-primary-dark: oklch(35% 0.12 250);  /* 同色相，更暗 */
+```
 
-### D. 無障礙與易用性 (Accessibility & Usability)
-- **焦點引導**：所有交互元素必須具備清晰的 `focus-visible` 狀態（例如 `ring-2 ring-offset-2`）。
-- **語義化標籤**：優先使用 HTML5 語義標籤 (`<nav>`, `<article>`, `<aside>`)。
-- **最小點擊區域**：確保行動裝置上的點擊目標至少具備 44x44px 的熱區。
+**核心洞察**：趨向白色或黑色時，降低 chroma（飽和度）。極端亮度下的高飽和度看起來俗氣。
+
+### 染色中性灰 (Tinted Neutrals)
+
+**純灰色已死。** 在所有中性色中加入品牌色相的微弱暗示：
+
+```css
+/* 死板灰色 — 沒有個性 */
+--gray-100: oklch(95% 0 0);
+
+/* 暖色調灰（加入品牌溫度） */
+--gray-100: oklch(95% 0.01 60);
+
+/* 冷色調灰（科技、專業感） */
+--gray-100: oklch(95% 0.01 250);
+```
+
+Chroma 極小（0.01）但可感知，在品牌色和 UI 之間建立潛意識的融合感。
+
+### 調色板結構
+
+| 角色 | 用途 | 範例 |
+|------|------|------|
+| **Primary** | 品牌、CTA、關鍵操作 | 1 色、3-5 個色階 |
+| **Neutral** | 文字、背景、邊框 | 9-11 個色階 |
+| **Semantic** | 成功、錯誤、警告、資訊 | 4 色，各 2-3 個色階 |
+| **Surface** | 卡片、Modal、覆蓋層 | 2-3 個高度層級 |
+
+**除非確實需要，否則跳過 secondary/tertiary。** 多數應用只需一個強調色。更多只會造成決策疲勞和視覺雜訊。
+
+### 60-30-10 法則
+
+此法則關乎**視覺重量**，而非像素佔比：
+
+- **60%**：中性背景、留白、基礎表面
+- **30%**：次要色彩——文字、邊框、非活動狀態
+- **10%**：強調色——CTA、高亮、焦點狀態
+
+常見錯誤：到處使用強調色。強調色之所以有效，正因為它**稀少**。過度使用會消滅其力量。
+
+### 禁止純灰與純黑
+
+純灰（`oklch(50% 0 0)`）和純黑（`#000`）在自然界中不存在。即使 chroma 0.005-0.01 也足以感覺自然。
+
+### 配置化色彩
+嚴禁使用隨機 HEX Code。所有顏色必須對應 `theme.colors` 或 Tailwind 預設色階，並確保支援 **Dark Mode（`dark:`）**。
+
+---
+
+## 2. Dark Mode 設計 (Theming)
+
+**Dark Mode 不是反轉的 Light Mode。** 需要不同的設計決策：
+
+| Light Mode | Dark Mode |
+|------------|-----------|
+| 陰影表現深度 | 更亮的表面表現深度（無陰影） |
+| 深色文字 + 淺色背景 | 淺色文字 + 深色背景（降低字重） |
+| 鮮豔的強調色 | 稍微降飽和度 |
+| 白色背景 | 絕非純黑——使用深灰（oklch 12-18%） |
+
+```css
+:root[data-theme="dark"] {
+  --surface-1: oklch(15% 0.01 250);
+  --surface-2: oklch(20% 0.01 250);  /* 「更高」= 更亮 */
+  --surface-3: oklch(25% 0.01 250);
+  --body-weight: 350;  /* 比 400 稍微降低 */
+}
+```
+
+**Token 層次**：使用 primitive tokens（`--blue-500`）+ semantic tokens（`--color-primary`）。Dark mode 只重新定義 semantic 層。
+
+---
+
+## 3. 空間設計與佈局 (Spatial Design)
+
+### 間距系統：4pt 基礎
+
+8pt 系統太粗糙——經常需要 12px（介於 8 和 16 之間）。用 4pt 獲得更細粒度：4, 8, 12, 16, 24, 32, 48, 64, 96px。
+
+**命名用語義**（`--space-sm`, `--space-lg`），而非數值（`--spacing-8`）。用 `gap` 替代 margin 處理兄弟間距——消除 margin collapse 和清理 hack。
+
+### 呼吸感與節奏 (Whitespace & Rhythm)
+- **8px 步進規範**：遵循 `p-4`, `m-2`, `gap-4` 等 8px 網格倍數，建立視覺節奏感
+- **視覺重心**：透過 Padding 的差異化（Container 大於 Inner Element），引導使用者焦點
+
+### 自適應網格
+
+```css
+/* 無斷點的響應式網格 */
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+```
+
+欄位至少 280px，每行盡可能多，剩餘空間拉伸。複雜佈局用命名網格區域（`grid-template-areas`），在斷點處重新定義。
+
+### 視覺層次
+
+**模糊測試 (Squint Test)**：模糊你的眼睛，能否辨認出最重要的元素、第二重要的元素、清晰的分組？如果所有東西看起來一樣重，就有層次問題。
+
+**透過多維度建立層次**：
+
+| 工具 | 強層次 | 弱層次 |
+|------|--------|--------|
+| **尺寸** | 3:1 比例以上 | < 2:1 |
+| **字重** | Bold vs Regular | Medium vs Regular |
+| **色彩** | 高對比 | 相近色調 |
+| **位置** | 上/左（主要） | 下/右 |
+| **空間** | 周圍留白 | 擁擠 |
+
+**最佳層次同時使用 2-3 個維度**：標題更大、更粗、**且**上方有更多留白。
+
+### 資訊對比
+- 主標：`text-slate-900 font-semibold`
+- 次標：`text-slate-600 font-medium`
+- 內文：`text-slate-500`
+
+### 卡片不是必須的
+
+卡片被過度使用。間距和對齊自然創造視覺分組。僅在內容真正獨立且可操作、需要網格中的視覺比較、或需要清晰的互動邊界時使用卡片。**絕不嵌套卡片**——用間距、字型和細微分隔線在卡片內建立層次。
+
+### 光學調整
+- 文字在 `margin-left: 0` 時因字形留白看起來有縮進——用負 margin（`-0.05em`）做光學對齊
+- 幾何居中的圖示通常看起來偏了：播放圖示需右移，箭頭移向其方向
+
+### 深度與高度 (Depth & Elevation)
+
+建立語義化 z-index 層級：`dropdown → sticky → modal-backdrop → modal → toast → tooltip`。
+
+陰影創建一致的高度階梯：`sm → md → lg → xl`。
+**核心洞察**：陰影應該是微妙的——如果你能清楚看見它，可能太重了。
+
+**現代陰影**：使用分層陰影（`shadow-sm` 用於靜態卡片，`shadow-xl` 用於彈窗），營造真實的 Z 軸層次感。
+
+---
+
+## 4. 排版美學 (Typography Aesthetics)
+
+### Vertical Rhythm
+
+line-height 應是所有垂直間距的基礎單位。若正文 `line-height: 1.5` 於 `16px`（= 24px），間距值應為 24px 的倍數。這創造潛意識的和諧——文字和空間共享數學基礎。
+
+### Modular Scale
+
+常見錯誤：太多太接近的字型大小（14, 15, 16, 18px...）。這產生模糊的層次。
+
+**用更少的尺寸、更大的對比。** 五級系統涵蓋多數需求：
+
+| 角色 | 典型比例 | 用途 |
+|------|---------|------|
+| xs | 0.75rem | 標題、法律文字 |
+| sm | 0.875rem | 次要 UI、metadata |
+| base | 1rem | 正文 |
+| lg | 1.25-1.5rem | 子標題、引導文字 |
+| xl+ | 2-4rem | 大標題、Hero |
+
+常用比例：1.25（大三度）、1.333（純四度）、1.5（純五度）。選一個並堅持。
+
+### 可讀性與行寬 (Measure)
+- 用 `ch` 單位設定字元寬度：`max-width: 65ch`
+- Line-height 與行寬成反比——窄欄需更緊、寬欄需更鬆
+- **非顯而易見**：深色背景上的淺色文字需增加 line-height（+0.05-0.1），因為感知字重更輕
+
+### 字型選擇與配對
+
+**避免隱形預設**：Inter, Roboto, Open Sans, Lato, Montserrat 到處都是，讓設計感覺通用。
+
+**更好的 Google Fonts 替代方案**：
+- Inter → **Instrument Sans**, **Plus Jakarta Sans**, **Outfit**
+- Roboto → **Onest**, **Figtree**, **Urbanist**
+- Open Sans → **Source Sans 3**, **Nunito Sans**, **DM Sans**
+- 編輯/高級感 → **Fraunces**, **Newsreader**, **Lora**
+
+**配對原則**：通常你不需要第二個字型。一個精心選擇的字型家族搭配多個字重就能創造比兩個競爭字體更乾淨的層次。只有在需要真正對比時才加第二個字型（如展示標題 + 正文襯線）。
+
+配對時在多個軸上做對比：
+- Serif + Sans（結構對比）
+- Geometric + Humanist（個性對比）
+- Condensed display + Wide body（比例對比）
+
+**絕不配對相似但不同的字型**（如兩個幾何無襯線體）——這造成視覺張力而無清晰層次。
+
+### Fluid Typography
+使用 `clamp(min, preferred, max)`。中間值（如 `5vw + 1rem`）控制縮放速率。加入 rem 偏移量以免在小螢幕上坍縮到 0。
+
+**不用 fluid type 的場景**：按鈕文字、標籤、UI 元素（應保持一致）、極短文字。
+
+### OpenType Features
+
+```css
+.data-table { font-variant-numeric: tabular-nums; }   /* 表格數字對齊 */
+.recipe { font-variant-numeric: diagonal-fractions; }  /* 正確分數 */
+abbr { font-variant-caps: all-small-caps; }            /* 縮寫用小型大寫 */
+code { font-variant-ligatures: none; }                 /* 程式碼禁用連字 */
+body { font-kerning: normal; }                         /* 啟用字距調整 */
+```
+
+在 [Wakamai Fondue](https://wakamaifondue.com/) 檢查字型支援的功能。
+
+### Token 架構
+語義命名（`--text-body`, `--text-heading`），而非數值命名（`--font-size-16`）。Token 系統包含：字型堆疊、尺寸階梯、字重、行高、字距。
+
+---
+
+## 5. 動效美學 (Motion Aesthetics)
+
+### 時長：100/300/500 法則
+
+| 時長 | 用途 | 範例 |
+|------|------|------|
+| **100-150ms** | 即時回饋 | 按鈕按壓、Toggle、色彩變化 |
+| **200-300ms** | 狀態變化 | 選單開啟、Tooltip、Hover |
+| **300-500ms** | 佈局變化 | Accordion、Modal、Drawer |
+| **500-800ms** | 進場動畫 | 頁面載入、Hero 揭示 |
+
+**離場動畫比進場快**——用進場時長的 ~75%。
+
+### 緩動曲線
+
+**不要用 `ease`。** 它是折衷方案，很少是最佳選擇：
+
+| 曲線 | 用途 | CSS |
+|------|------|-----|
+| **ease-out** | 元素進入 | `cubic-bezier(0.16, 1, 0.3, 1)` |
+| **ease-in** | 元素離開 | `cubic-bezier(0.7, 0, 0.84, 0)` |
+| **ease-in-out** | 狀態切換 | `cubic-bezier(0.65, 0, 0.35, 1)` |
+
+微交互用指數曲線——它們模擬真實物理（摩擦、減速），感覺自然：
+
+```css
+--ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);   /* 流暢、精緻（推薦預設） */
+--ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);   /* 稍微戲劇化 */
+--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);     /* 敏捷、自信 */
+```
+
+**避免彈跳和彈性曲線。** 它們在 2015 年流行，現在感覺俗氣。真實物體不會在停止時彈跳——它們平滑減速。
+
+### 感知速度 (Perceived Performance)
+
+**沒人在乎你的網站有多快——只在乎感覺有多快。**
+
+- **80ms 閾值**：低於 80ms 感覺瞬間和同步
+- **主動 vs 被動時間**：被動等待（盯著 spinner）感覺比主動參與更長
+- **預先開始**：載入時立即開始過渡（iOS app zoom、Skeleton UI）
+- **提前完成**：漸進式顯示內容，不要等所有東西都載入
+- **Ease-in 趨向結尾**：加速完成會壓縮感知時間（峰終效應）
+- **注意**：太快的回應可能降低感知價值。複雜操作有時短暫延遲暗示「真正的工作」正在進行
+
+---
+
+## 6. 視覺工藝 (Visual Craft)
+
+### 巢狀圓角 (Nested Radius)
+遵循內外比例：外層容器 `rounded-xl` 時，內層對應縮減為 `rounded-lg` 或 `rounded-md`。
+
+### 細膩邊框 (Subtle Borders)
+優先使用帶透明度的邊框（如 `border-slate-200/50`），增加元件在不同背景下的融合感。
+
+### 狀態感知 (State Awareness)
+- 點擊元素必備 `hover:bg-opacity-80` 與微幅 `active:scale-[0.98]`
+- 過渡限制在特定屬性（如 `transition-colors`），而非 `transition-all`
+
+---
+
+## 7. UX 寫作 (UX Writing)
+
+### 按鈕文字
+
+**絕不使用「OK」、「Submit」、「Yes/No」。** 使用具體的動詞 + 受詞：
+
+| ❌ 糟糕 | ✅ 良好 | 原因 |
+|---------|---------|------|
+| OK | 儲存變更 | 說明會發生什麼 |
+| Submit | 建立帳號 | 結果導向 |
+| Yes | 刪除訊息 | 確認具體操作 |
+| Cancel | 繼續編輯 | 澄清「取消」的意思 |
+
+破壞性操作用「刪除」而非「移除」（刪除是永久的）。「刪除 5 項」而非「刪除已選擇」（顯示數量）。
+
+### 錯誤訊息公式
+
+每個錯誤回答三個問題：(1) 發生了什麼？(2) 為什麼？(3) 怎麼修？
+
+| 情境 | 模板 |
+|------|------|
+| 格式錯誤 | 「[欄位] 需要是 [格式]。範例：[範例]」 |
+| 必填欄位 | 「請輸入 [缺少的內容]」 |
+| 權限不足 | 「你沒有 [東西] 的存取權限。[替代做法]」 |
+| 網路錯誤 | 「無法連線至 [東西]。請檢查網路並 [操作]」 |
+| 伺服器錯誤 | 「我們這邊出了問題。正在處理中。[替代操作]」 |
+
+**不要怪使用者**：「請輸入 MM/DD/YYYY 格式的日期」而非「你輸入了無效日期」。
+
+### 空狀態是機會
+
+空狀態是引導時刻：(1) 簡短承認、(2) 解釋填充的價值、(3) 提供明確操作。「尚未有任何專案。建立你的第一個專案開始吧！」而非只有「沒有項目」。
+
+### 語氣適配
+
+| 時刻 | 語氣轉變 |
+|------|---------|
+| 成功 | 慶祝、簡短：「完成！你的變更已上線。」 |
+| 錯誤 | 同理、有幫助：「沒有成功。以下是你可以嘗試的...」 |
+| 載入中 | 令人安心：「正在儲存你的作品...」 |
+| 破壞性確認 | 嚴肅、清晰：「刪除此專案？此操作無法復原。」 |
+
+**絕不在錯誤時使用幽默。** 使用者已經很沮喪了，要有幫助，而非賣萌。
+
+### 載入狀態文字
+具體化：「正在儲存你的草稿...」而非「載入中...」。長時間等待時設定預期（「這通常需要 30 秒」）或顯示進度。
+
+### 術語一致性
+
+選一個詞並堅持使用：
+
+| ❌ 不一致 | ✅ 一致 |
+|-----------|---------|
+| Delete / Remove / Trash | Delete |
+| Settings / Preferences / Options | Settings |
+| Sign in / Log in / Enter | Sign in |
+| Create / Add / New | Create |
+
+建立術語詞彙表並強制執行。多樣性造成混亂。
+
+### 翻譯考量
+- 德文比英文長 ~30%，法文 +20%，芬蘭文 +30-40%——預留空間
+- 數字分離（「新訊息：3」而非「你有 3 則新訊息」）
+- 使用完整句子作為單一字串（語序因語言而異）
+- 避免縮寫，提供翻譯者字串出現位置的上下文
+
+---
+
+**禁止**：依賴純色彩傳達資訊。使用純黑（#000）大面積著色。超過 2-3 個字型家族。跳過色覺障礙測試。使用裝飾字體作為正文。術語隨意變化。錯誤訊息中責備使用者。

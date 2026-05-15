@@ -1,216 +1,91 @@
 ---
-name: FRONTEND-DESIGN
-description: 融合現代 UI/UX 美學與 Claude-Code 工程規範，專注於高品質、一致性且具備韌性的前端實作
+name: FRONTEND-ENGINEERING (前端工程技巧)
+description: 專注於前端性能優化、CSS 架構、互動模式、響應式工程與無障礙實作
 ---
 
-# Color & Contrast
+# 前端工程技巧 (Frontend Engineering)
 
-## Color Spaces: Use OKLCH
+> **Version:** 1.0
+> **Last Updated:** 2026-05-15
+> **定位：** 性能、工程實踐、互動模式、響應式、CSS 架構、無障礙工程
+> **姊妹 Skill：** `ui-skill` — 負責視覺美化、色彩、排版、動效美學
 
-**Stop using HSL.** Use OKLCH (or LCH) instead. It's perceptually uniform, meaning equal steps in lightness *look* equal—unlike HSL where 50% lightness in yellow looks bright while 50% in blue looks dark.
+---
 
-```css
-/* OKLCH: lightness (0-100%), chroma (0-0.4+), hue (0-360) */
---color-primary: oklch(60% 0.15 250);      /* Blue */
---color-primary-light: oklch(85% 0.08 250); /* Same hue, lighter */
---color-primary-dark: oklch(35% 0.12 250);  /* Same hue, darker */
-```
+## 1. CSS 架構與隔離 (CSS Architecture & Isolation)
 
-**Key insight**: As you move toward white or black, reduce chroma (saturation). High chroma at extreme lightness looks garish. A light blue at 85% lightness needs ~0.08 chroma, not the 0.15 of your base color.
+### 樣式復用
+- **原子化 Class 優先**：強制使用專案現有的 Tailwind/CSS Class。撰寫前必須掃描現有樣式，嚴禁重複造輪子。
+- **組件庫優先**：優先使用專案已有的 UI Kit（如 Shadcn UI, AntD, Radix），確保行為邏輯一致。
+- **Token 系統**：使用兩層 Token — primitive tokens（`--blue-500`）和 semantic tokens（`--color-primary: var(--blue-500)`）。主題切換只重定義 semantic 層。
 
-## Building Functional Palettes
+### 工程隔離
+- **命名衝突預防**：新增 Class 或組件前需全域搜索，確保不與現有樣式衝突。
+- **技術隔離策略**：優先使用 CSS Modules 或 Tailwind 的 `@layer` 指令。
+- **Alpha 是設計味道**：大量使用透明度（rgba, hsla）通常代表調色板不完整。為每個場景定義明確的覆蓋色，而非依賴透明度疊加。例外：Focus ring 和互動狀態。
 
-### The Tinted Neutral Trap
+### 防禦性 CSS (Robustness)
+- 動態文字區塊必須考慮溢出：強制使用 `truncate` 或 `line-clamp`
+- 容器應具備 `min-h` 或 `aspect-ratio` 以防止 Layout Shift
+- **只動 `transform` 和 `opacity`**：其他屬性會觸發 layout recalculation。高度動畫用 `grid-template-rows: 0fr → 1fr` 替代直接動畫 `height`
+- 過渡效果應限制在特定屬性（如 `transition-colors`），而非全域 `transition-all`
 
-**Pure gray is dead.** Add a subtle hint of your brand hue to all neutrals:
+---
 
-```css
-/* Dead grays */
---gray-100: oklch(95% 0 0);     /* No personality */
---gray-900: oklch(15% 0 0);
+## 2. 互動模式 (Interaction Patterns)
 
-/* Warm-tinted grays (add brand warmth) */
---gray-100: oklch(95% 0.01 60);  /* Hint of warmth */
---gray-900: oklch(15% 0.01 60);
+### 八種互動狀態
 
-/* Cool-tinted grays (tech, professional) */
---gray-100: oklch(95% 0.01 250); /* Hint of blue */
---gray-900: oklch(15% 0.01 250);
-```
+每個互動元素都需要設計這些狀態：
 
-The chroma is tiny (0.01) but perceptible. It creates subconscious cohesion between your brand color and your UI.
-
-### Palette Structure
-
-A complete system needs:
-
-| Role | Purpose | Example |
+| 狀態 | 觸發時機 | 視覺處理 |
 |------|---------|---------|
-| **Primary** | Brand, CTAs, key actions | 1 color, 3-5 shades |
-| **Neutral** | Text, backgrounds, borders | 9-11 shade scale |
-| **Semantic** | Success, error, warning, info | 4 colors, 2-3 shades each |
-| **Surface** | Cards, modals, overlays | 2-3 elevation levels |
+| **Default** | 靜止 | 基礎樣式 |
+| **Hover** | 指標移入（非觸控） | 微幅提升、色彩變化 |
+| **Focus** | 鍵盤/程式焦點 | 可見焦點環 |
+| **Active** | 正在按壓 | 按入感、加深 |
+| **Disabled** | 不可互動 | 降低透明度、禁止指標 |
+| **Loading** | 處理中 | Spinner、Skeleton |
+| **Error** | 錯誤狀態 | 紅色邊框、圖示、訊息 |
+| **Success** | 完成 | 綠色確認 |
 
-**Skip secondary/tertiary unless you need them.** Most apps work fine with one accent color. Adding more creates decision fatigue and visual noise.
+**關鍵：** Hover 和 Focus 是不同的。鍵盤使用者永遠看不到 hover 狀態。
 
-### The 60-30-10 Rule (Applied Correctly)
+### Focus Ring 正確做法
 
-This rule is about **visual weight**, not pixel count:
-
-- **60%**: Neutral backgrounds, white space, base surfaces
-- **30%**: Secondary colors—text, borders, inactive states
-- **10%**: Accent—CTAs, highlights, focus states
-
-The common mistake: using the accent color everywhere because it's "the brand color." Accent colors work *because* they're rare. Overuse kills their power.
-
-## Contrast & Accessibility
-
-### WCAG Requirements
-
-| Content Type | AA Minimum | AAA Target |
-|--------------|------------|------------|
-| Body text | 4.5:1 | 7:1 |
-| Large text (18px+ or 14px bold) | 3:1 | 4.5:1 |
-| UI components, icons | 3:1 | 4.5:1 |
-| Non-essential decorations | None | None |
-
-**The gotcha**: Placeholder text still needs 4.5:1. That light gray placeholder you see everywhere? Usually fails WCAG.
-
-### Dangerous Color Combinations
-
-These commonly fail contrast or cause readability issues:
-
-- Light gray text on white (the #1 accessibility fail)
-- **Gray text on any colored background**—gray looks washed out and dead on color. Use a darker shade of the background color, or transparency
-- Red text on green background (or vice versa)—8% of men can't distinguish these
-- Blue text on red background (vibrates visually)
-- Yellow text on white (almost always fails)
-- Thin light text on images (unpredictable contrast)
-
-### Never Use Pure Gray or Pure Black
-
-Pure gray (`oklch(50% 0 0)`) and pure black (`#000`) don't exist in nature—real shadows and surfaces always have a color cast. Even a chroma of 0.005-0.01 is enough to feel natural without being obviously tinted. (See tinted neutrals example above.)
-
-### Testing
-
-Don't trust your eyes. Use tools:
-
-- [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
-- Browser DevTools → Rendering → Emulate vision deficiencies
-- [Polypane](https://polypane.app/) for real-time testing
-
-## Theming: Light & Dark Mode
-
-### Dark Mode Is Not Inverted Light Mode
-
-You can't just swap colors. Dark mode requires different design decisions:
-
-| Light Mode | Dark Mode |
-|------------|-----------|
-| Shadows for depth | Lighter surfaces for depth (no shadows) |
-| Dark text on light | Light text on dark (reduce font weight) |
-| Vibrant accents | Desaturate accents slightly |
-| White backgrounds | Never pure black—use dark gray (oklch 12-18%) |
+**絕對禁止 `outline: none` 而不提供替代方案。** 使用 `:focus-visible` 只對鍵盤使用者顯示焦點環：
 
 ```css
-/* Dark mode depth via surface color, not shadow */
-:root[data-theme="dark"] {
-  --surface-1: oklch(15% 0.01 250);
-  --surface-2: oklch(20% 0.01 250);  /* "Higher" = lighter */
-  --surface-3: oklch(25% 0.01 250);
-
-  /* Reduce text weight slightly */
-  --body-weight: 350;  /* Instead of 400 */
-}
-```
-
-### Token Hierarchy
-
-Use two layers: primitive tokens (`--blue-500`) and semantic tokens (`--color-primary: var(--blue-500)`). For dark mode, only redefine the semantic layer—primitives stay the same.
-
-## Alpha Is A Design Smell
-
-Heavy use of transparency (rgba, hsla) usually means an incomplete palette. Alpha creates unpredictable contrast, performance overhead, and inconsistency. Define explicit overlay colors for each context instead. Exception: focus rings and interactive states where see-through is needed.
-
----
-
-**Avoid**: Relying on color alone to convey information. Creating palettes without clear roles for each color. Using pure black (#000) for large areas. Skipping color blindness testing (8% of men affected).
-
-# Interaction Design
-
-## The Eight Interactive States
-
-Every interactive element needs these states designed:
-
-| State | When | Visual Treatment |
-|-------|------|------------------|
-| **Default** | At rest | Base styling |
-| **Hover** | Pointer over (not touch) | Subtle lift, color shift |
-| **Focus** | Keyboard/programmatic focus | Visible ring (see below) |
-| **Active** | Being pressed | Pressed in, darker |
-| **Disabled** | Not interactive | Reduced opacity, no pointer |
-| **Loading** | Processing | Spinner, skeleton |
-| **Error** | Invalid state | Red border, icon, message |
-| **Success** | Completed | Green check, confirmation |
-
-**The common miss**: Designing hover without focus, or vice versa. They're different. Keyboard users never see hover states.
-
-## Focus Rings: Do Them Right
-
-**Never `outline: none` without replacement.** It's an accessibility violation. Instead, use `:focus-visible` to show focus only for keyboard users:
-
-```css
-/* Hide focus ring for mouse/touch */
-button:focus {
-  outline: none;
-}
-
-/* Show focus ring for keyboard */
+button:focus { outline: none; }
 button:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 ```
 
-**Focus ring design**:
-- High contrast (3:1 minimum against adjacent colors)
-- 2-3px thick
-- Offset from element (not inside it)
-- Consistent across all interactive elements
+**設計要求**：對比度至少 3:1、2-3px 粗、偏移元素外側、全站一致。
 
-## Form Design: The Non-Obvious
+### 表單設計
+- **Placeholder 不是 Label**：Placeholder 會在輸入時消失，必須使用可見的 `<label>`
+- **Blur 時驗證**，而非每次按鍵（例外：密碼強度即時回饋）
+- 錯誤訊息放在欄位**下方**，使用 `aria-describedby` 連結
 
-**Placeholders aren't labels**—they disappear on input. Always use visible `<label>` elements. **Validate on blur**, not on every keystroke (exception: password strength). Place errors **below** fields with `aria-describedby` connecting them.
-
-## Loading States
-
-**Optimistic updates**: Show success immediately, rollback on failure. Use for low-stakes actions (likes, follows), not payments or destructive actions. **Skeleton screens > spinners**—they preview content shape and feel faster than generic spinners.
-
-## Modals: The Inert Approach
-
-Focus trapping in modals used to require complex JavaScript. Now use the `inert` attribute:
+### Modal：使用 `inert` 屬性
 
 ```html
-<!-- When modal is open -->
-<main inert>
-  <!-- Content behind modal can't be focused or clicked -->
-</main>
+<!-- Modal 開啟時 -->
+<main inert><!-- 背景內容無法被 focus 或點擊 --></main>
 <dialog open>
   <h2>Modal Title</h2>
-  <!-- Focus stays inside modal -->
+  <!-- Focus 被困在 modal 內 -->
 </dialog>
 ```
 
-Or use the native `<dialog>` element:
+或使用原生 `<dialog>` 元素：`dialog.showModal()` — 自帶 focus trap，按 Escape 可關閉。
 
-```javascript
-const dialog = document.querySelector('dialog');
-dialog.showModal();  // Opens with focus trap, closes on Escape
-```
+### Popover API
 
-## The Popover API
-
-For tooltips, dropdowns, and non-modal overlays, use native popovers:
+Tooltip、Dropdown、非模態覆蓋層，使用原生 Popover：
 
 ```html
 <button popovertarget="menu">Open menu</button>
@@ -220,17 +95,11 @@ For tooltips, dropdowns, and non-modal overlays, use native popovers:
 </div>
 ```
 
-**Benefits**: Light-dismiss (click outside closes), proper stacking, no z-index wars, accessible by default.
+**優勢**：Light-dismiss、正確堆疊、無 z-index 戰爭、預設無障礙。
 
-## Destructive Actions: Undo > Confirm
+### 鍵盤導航
 
-**Undo is better than confirmation dialogs**—users click through confirmations mindlessly. Remove from UI immediately, show undo toast, actually delete after toast expires. Use confirmation only for truly irreversible actions (account deletion), high-cost actions, or batch operations.
-
-## Keyboard Navigation Patterns
-
-### Roving Tabindex
-
-For component groups (tabs, menu items, radio groups), one item is tabbable; arrow keys move within:
+**Roving Tabindex**：組件群組（tabs, menu, radio）中只有一項可 Tab，箭頭鍵在內部移動：
 
 ```html
 <div role="tablist">
@@ -240,167 +109,48 @@ For component groups (tabs, menu items, radio groups), one item is tabbable; arr
 </div>
 ```
 
-Arrow keys move `tabindex="0"` between items. Tab moves to the next component entirely.
+**Skip Links**：提供 `<a href="#main-content">Skip to main content</a>` 讓鍵盤使用者跳過導航列。
 
-### Skip Links
+### 破壞性操作：Undo > Confirm
 
-Provide skip links (`<a href="#main-content">Skip to main content</a>`) for keyboard users to jump past navigation. Hide off-screen, show on focus.
+**Undo 優於確認對話框**——使用者會無意識地點過確認。從 UI 立即移除、顯示 Undo Toast、Toast 過期後才真正刪除。僅在真正不可逆操作（帳號刪除）、高成本操作、批次操作時使用確認。
 
-## Gesture Discoverability
+### 手勢可發現性
 
-Swipe-to-delete and similar gestures are invisible. Hint at their existence:
-
-- **Partially reveal**: Show delete button peeking from edge
-- **Onboarding**: Coach marks on first use
-- **Alternative**: Always provide a visible fallback (menu with "Delete")
-
-Don't rely on gestures as the only way to perform actions.
+滑動刪除等手勢是隱形的。提示其存在：
+- 局部顯露刪除按鈕
+- 首次使用時的引導標記
+- **永遠提供可見的備選操作**（如選單中的「刪除」）
 
 ---
 
-**Avoid**: Removing focus indicators without alternatives. Using placeholder text as labels. Touch targets <44x44px. Generic error messages. Custom controls without ARIA/keyboard support.
+## 3. 響應式工程 (Responsive Engineering)
 
-# Motion Design
+### Mobile-First
+從手機基礎樣式開始，使用 `min-width` 查詢逐步添加複雜度。Desktop-first（`max-width`）意味著手機先載入不需要的樣式。
 
-## Duration: The 100/300/500 Rule
+### 內容驅動斷點
+別追逐裝置尺寸——從窄開始拉伸，設計破掉的地方加斷點。三個斷點通常就夠（640, 768, 1024px）。使用 `clamp()` 實現無斷點的流體值。
 
-Timing matters more than easing. These durations feel right for most UI:
-
-| Duration | Use Case | Examples |
-|----------|----------|----------|
-| **100-150ms** | Instant feedback | Button press, toggle, color change |
-| **200-300ms** | State changes | Menu open, tooltip, hover states |
-| **300-500ms** | Layout changes | Accordion, modal, drawer |
-| **500-800ms** | Entrance animations | Page load, hero reveals |
-
-**Exit animations are faster than entrances**—use ~75% of enter duration.
-
-## Easing: Pick the Right Curve
-
-**Don't use `ease`.** It's a compromise that's rarely optimal. Instead:
-
-| Curve | Use For | CSS |
-|-------|---------|-----|
-| **ease-out** | Elements entering | `cubic-bezier(0.16, 1, 0.3, 1)` |
-| **ease-in** | Elements leaving | `cubic-bezier(0.7, 0, 0.84, 0)` |
-| **ease-in-out** | State toggles (there → back) | `cubic-bezier(0.65, 0, 0.35, 1)` |
-
-**For micro-interactions, use exponential curves**—they feel natural because they mimic real physics (friction, deceleration):
+### 偵測輸入方式，而非螢幕尺寸
 
 ```css
-/* Quart out - smooth, refined (recommended default) */
---ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+/* 精確指標（滑鼠、觸控板） */
+@media (pointer: fine) { .button { padding: 8px 16px; } }
 
-/* Quint out - slightly more dramatic */
---ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+/* 粗略指標（觸控） */
+@media (pointer: coarse) { .button { padding: 12px 20px; } }
 
-/* Expo out - snappy, confident */
---ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+/* 支援 hover 的裝置 */
+@media (hover: hover) { .card:hover { transform: translateY(-2px); } }
+
+/* 不支援 hover（觸控裝置） */
+@media (hover: none) { .card { /* 使用 active 替代 */ } }
 ```
 
-**Avoid bounce and elastic curves.** They were trendy in 2015 but now feel tacky and amateurish. Real objects don't bounce when they stop—they decelerate smoothly. Overshoot effects draw attention to the animation itself rather than the content.
+**關鍵**：不要依賴 hover 實現功能。觸控使用者無法 hover。
 
-## The Only Two Properties You Should Animate
-
-**transform** and **opacity** only—everything else causes layout recalculation. For height animations (accordions), use `grid-template-rows: 0fr → 1fr` instead of animating `height` directly.
-
-## Staggered Animations
-
-Use CSS custom properties for cleaner stagger: `animation-delay: calc(var(--i, 0) * 50ms)` with `style="--i: 0"` on each item. **Cap total stagger time**—10 items at 50ms = 500ms total. For many items, reduce per-item delay or cap staggered count.
-
-## Reduced Motion
-
-This is not optional. Vestibular disorders affect ~35% of adults over 40.
-
-```css
-/* Define animations normally */
-.card {
-  animation: slide-up 500ms ease-out;
-}
-
-/* Provide alternative for reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .card {
-    animation: fade-in 200ms ease-out;  /* Crossfade instead of motion */
-  }
-}
-
-/* Or disable entirely */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-```
-
-**What to preserve**: Functional animations like progress bars, loading spinners (slowed down), and focus indicators should still work—just without spatial movement.
-
-## Perceived Performance
-
-**Nobody cares how fast your site is—just how fast it feels.** Perception can be as effective as actual performance.
-
-**The 80ms threshold**: Our brains buffer sensory input for ~80ms to synchronize perception. Anything under 80ms feels instant and simultaneous. This is your target for micro-interactions.
-
-**Active vs passive time**: Passive waiting (staring at a spinner) feels longer than active engagement. Strategies to shift the balance:
-
-- **Preemptive start**: Begin transitions immediately while loading (iOS app zoom, skeleton UI). Users perceive work happening.
-- **Early completion**: Show content progressively—don't wait for everything. Video buffering, progressive images, streaming HTML.
-- **Optimistic UI**: Update the interface immediately, handle failures gracefully. Instagram likes work offline—the UI updates instantly, syncs later. Use for low-stakes actions; avoid for payments or destructive operations.
-
-**Easing affects perceived duration**: Ease-in (accelerating toward completion) makes tasks feel shorter because the peak-end effect weights final moments heavily. Ease-out feels satisfying for entrances, but ease-in toward a task's end compresses perceived time.
-
-**Caution**: Too-fast responses can decrease perceived value. Users may distrust instant results for complex operations (search, analysis). Sometimes a brief delay signals "real work" is happening.
-
-## Performance
-
-Don't use `will-change` preemptively—only when animation is imminent (`:hover`, `.animating`). For scroll-triggered animations, use Intersection Observer instead of scroll events; unobserve after animating once. Create motion tokens for consistency (durations, easings, common transitions).
-
----
-
-**Avoid**: Animating everything (animation fatigue is real). Using >500ms for UI feedback. Ignoring `prefers-reduced-motion`. Using animation to hide slow loading.
-
-# Responsive Design
-
-## Mobile-First: Write It Right
-
-Start with base styles for mobile, use `min-width` queries to layer complexity. Desktop-first (`max-width`) means mobile loads unnecessary styles first.
-
-## Breakpoints: Content-Driven
-
-Don't chase device sizes—let content tell you where to break. Start narrow, stretch until design breaks, add breakpoint there. Three breakpoints usually suffice (640, 768, 1024px). Use `clamp()` for fluid values without breakpoints.
-
-## Detect Input Method, Not Just Screen Size
-
-**Screen size doesn't tell you input method.** A laptop with touchscreen, a tablet with keyboard—use pointer and hover queries:
-
-```css
-/* Fine pointer (mouse, trackpad) */
-@media (pointer: fine) {
-  .button { padding: 8px 16px; }
-}
-
-/* Coarse pointer (touch, stylus) */
-@media (pointer: coarse) {
-  .button { padding: 12px 20px; }  /* Larger touch target */
-}
-
-/* Device supports hover */
-@media (hover: hover) {
-  .card:hover { transform: translateY(-2px); }
-}
-
-/* Device doesn't support hover (touch) */
-@media (hover: none) {
-  .card { /* No hover state - use active instead */ }
-}
-```
-
-**Critical**: Don't rely on hover for functionality. Touch users can't hover.
-
-## Safe Areas: Handle the Notch
-
-Modern phones have notches, rounded corners, and home indicators. Use `env()`:
+### Safe Areas
 
 ```css
 body {
@@ -409,510 +159,137 @@ body {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
-
-/* With fallback */
-.footer {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
-}
 ```
 
-**Enable viewport-fit** in your meta tag:
 ```html
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 ```
 
-## Responsive Images: Get It Right
-
-### srcset with Width Descriptors
+### 響應式圖片
 
 ```html
-<img
-  src="hero-800.jpg"
-  srcset="
-    hero-400.jpg 400w,
-    hero-800.jpg 800w,
-    hero-1200.jpg 1200w
-  "
+<img src="hero-800.jpg"
+  srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
   sizes="(max-width: 768px) 100vw, 50vw"
-  alt="Hero image"
->
+  alt="Hero image">
 ```
 
-**How it works**:
-- `srcset` lists available images with their actual widths (`w` descriptors)
-- `sizes` tells the browser how wide the image will display
-- Browser picks the best file based on viewport width AND device pixel ratio
+Art Direction 用 `<picture>` 元素（不同裁切，非只是解析度差異）。
 
-### Picture Element for Art Direction
+### Container Queries
 
-When you need different crops/compositions (not just resolutions):
-
-```html
-<picture>
-  <source media="(min-width: 768px)" srcset="wide.jpg">
-  <source media="(max-width: 767px)" srcset="tall.jpg">
-  <img src="fallback.jpg" alt="...">
-</picture>
-```
-
-## Layout Adaptation Patterns
-
-**Navigation**: Three stages—hamburger + drawer on mobile, horizontal compact on tablet, full with labels on desktop. **Tables**: Transform to cards on mobile using `display: block` and `data-label` attributes. **Progressive disclosure**: Use `<details>/<summary>` for content that can collapse on mobile.
-
-## Testing: Don't Trust DevTools Alone
-
-DevTools device emulation is useful for layout but misses:
-
-- Actual touch interactions
-- Real CPU/memory constraints
-- Network latency patterns
-- Font rendering differences
-- Browser chrome/keyboard appearances
-
-**Test on at least**: One real iPhone, one real Android, a tablet if relevant. Cheap Android phones reveal performance issues you'll never see on simulators.
-
----
-
-**Avoid**: Desktop-first design. Device detection instead of feature detection. Separate mobile/desktop codebases. Ignoring tablet and landscape. Assuming all mobile devices are powerful.
-
-# Spatial Design
-
-## Spacing Systems
-
-### Use 4pt Base, Not 8pt
-
-8pt systems are too coarse—you'll frequently need 12px (between 8 and 16). Use 4pt for granularity: 4, 8, 12, 16, 24, 32, 48, 64, 96px.
-
-### Name Tokens Semantically
-
-Name by relationship (`--space-sm`, `--space-lg`), not value (`--spacing-8`). Use `gap` instead of margins for sibling spacing—it eliminates margin collapse and cleanup hacks.
-
-## Grid Systems
-
-### The Self-Adjusting Grid
-
-Use `repeat(auto-fit, minmax(280px, 1fr))` for responsive grids without breakpoints. Columns are at least 280px, as many as fit per row, leftovers stretch. For complex layouts, use named grid areas (`grid-template-areas`) and redefine them at breakpoints.
-
-## Visual Hierarchy
-
-### The Squint Test
-
-Blur your eyes (or screenshot and blur). Can you still identify:
-- The most important element?
-- The second most important?
-- Clear groupings?
-
-If everything looks the same weight blurred, you have a hierarchy problem.
-
-### Hierarchy Through Multiple Dimensions
-
-Don't rely on size alone. Combine:
-
-| Tool | Strong Hierarchy | Weak Hierarchy |
-|------|------------------|----------------|
-| **Size** | 3:1 ratio or more | <2:1 ratio |
-| **Weight** | Bold vs Regular | Medium vs Regular |
-| **Color** | High contrast | Similar tones |
-| **Position** | Top/left (primary) | Bottom/right |
-| **Space** | Surrounded by white space | Crowded |
-
-**The best hierarchy uses 2-3 dimensions at once**: A heading that's larger, bolder, AND has more space above it.
-
-### Cards Are Not Required
-
-Cards are overused. Spacing and alignment create visual grouping naturally. Use cards only when content is truly distinct and actionable, items need visual comparison in a grid, or content needs clear interaction boundaries. **Never nest cards inside cards**—use spacing, typography, and subtle dividers for hierarchy within a card.
-
-## Container Queries
-
-Viewport queries are for page layouts. **Container queries are for components**:
+Viewport 查詢用於頁面佈局，**Container Queries 用於組件**：
 
 ```css
-.card-container {
-  container-type: inline-size;
-}
+.card-container { container-type: inline-size; }
 
-.card {
-  display: grid;
-  gap: var(--space-md);
-}
-
-/* Card layout changes based on its container, not viewport */
 @container (min-width: 400px) {
-  .card {
-    grid-template-columns: 120px 1fr;
-  }
+  .card { grid-template-columns: 120px 1fr; }
 }
 ```
 
-**Why this matters**: A card in a narrow sidebar stays compact, while the same card in a main content area expands—automatically, without viewport hacks.
+### 導航自適應
+三階段——手機：Hamburger + Drawer → 平板：水平精簡 → 桌面：完整含標籤。表格在手機上用 `display: block` + `data-label` 轉為卡片。使用 `<details>/<summary>` 實現漸進式揭露。
 
-## Optical Adjustments
-
-Text at `margin-left: 0` looks indented due to letterform whitespace—use negative margin (`-0.05em`) to optically align. Geometrically centered icons often look off-center; play icons need to shift right, arrows shift toward their direction.
-
-### Touch Targets vs Visual Size
-
-Buttons can look small but need large touch targets (44px minimum). Use padding or pseudo-elements:
-
-```css
-.icon-button {
-  width: 24px;  /* Visual size */
-  height: 24px;
-  position: relative;
-}
-
-.icon-button::before {
-  content: '';
-  position: absolute;
-  inset: -10px;  /* Expand tap target to 44px */
-}
-```
-
-## Depth & Elevation
-
-Create semantic z-index scales (dropdown → sticky → modal-backdrop → modal → toast → tooltip) instead of arbitrary numbers. For shadows, create a consistent elevation scale (sm → md → lg → xl). **Key insight**: Shadows should be subtle—if you can clearly see it, it's probably too strong.
+### 測試
+DevTools 裝置模擬會遺漏：真實觸控互動、實際 CPU/記憶體限制、網路延遲、字型渲染差異、瀏覽器 Chrome/鍵盤外觀。**至少在一台 iPhone、一台 Android、相關時加上平板上測試。**
 
 ---
 
-**Avoid**: Arbitrary spacing values outside your scale. Making all spacing equal (variety creates hierarchy). Creating hierarchy through size alone - combine size, weight, color, and space.
+## 4. 動效性能 (Motion Performance)
 
-# Spatial Design
+### 動畫效能規則
+- **只動 `transform` 和 `opacity`**：其他屬性觸發 layout recalculation
+- 高度動畫用 `grid-template-rows: 0fr → 1fr`
+- `will-change` 不要預防性使用——只在動畫即將發生時（`:hover`、`.animating`）
+- 滾動觸發動畫用 **Intersection Observer** 替代 scroll events；動畫完成後 `unobserve`
+- 建立 motion tokens 以維持一致性（duration、easing、常用 transition）
 
-## Spacing Systems
+### Staggered Animations 效能
+```css
+animation-delay: calc(var(--i, 0) * 50ms);
+```
+**限制總 stagger 時間**：10 項 × 50ms = 500ms。項目多時減少每項延遲或限制 stagger 數量。
 
-### Use 4pt Base, Not 8pt
+### Reduced Motion（必要，非可選）
 
-8pt systems are too coarse—you'll frequently need 12px (between 8 and 16). Use 4pt for granularity: 4, 8, 12, 16, 24, 32, 48, 64, 96px.
-
-### Name Tokens Semantically
-
-Name by relationship (`--space-sm`, `--space-lg`), not value (`--spacing-8`). Use `gap` instead of margins for sibling spacing—it eliminates margin collapse and cleanup hacks.
-
-## Grid Systems
-
-### The Self-Adjusting Grid
-
-Use `repeat(auto-fit, minmax(280px, 1fr))` for responsive grids without breakpoints. Columns are at least 280px, as many as fit per row, leftovers stretch. For complex layouts, use named grid areas (`grid-template-areas`) and redefine them at breakpoints.
-
-## Visual Hierarchy
-
-### The Squint Test
-
-Blur your eyes (or screenshot and blur). Can you still identify:
-- The most important element?
-- The second most important?
-- Clear groupings?
-
-If everything looks the same weight blurred, you have a hierarchy problem.
-
-### Hierarchy Through Multiple Dimensions
-
-Don't rely on size alone. Combine:
-
-| Tool | Strong Hierarchy | Weak Hierarchy |
-|------|------------------|----------------|
-| **Size** | 3:1 ratio or more | <2:1 ratio |
-| **Weight** | Bold vs Regular | Medium vs Regular |
-| **Color** | High contrast | Similar tones |
-| **Position** | Top/left (primary) | Bottom/right |
-| **Space** | Surrounded by white space | Crowded |
-
-**The best hierarchy uses 2-3 dimensions at once**: A heading that's larger, bolder, AND has more space above it.
-
-### Cards Are Not Required
-
-Cards are overused. Spacing and alignment create visual grouping naturally. Use cards only when content is truly distinct and actionable, items need visual comparison in a grid, or content needs clear interaction boundaries. **Never nest cards inside cards**—use spacing, typography, and subtle dividers for hierarchy within a card.
-
-## Container Queries
-
-Viewport queries are for page layouts. **Container queries are for components**:
+前庭功能障礙影響 ~35% 40 歲以上成人。
 
 ```css
-.card-container {
-  container-type: inline-size;
-}
-
-.card {
-  display: grid;
-  gap: var(--space-md);
-}
-
-/* Card layout changes based on its container, not viewport */
-@container (min-width: 400px) {
-  .card {
-    grid-template-columns: 120px 1fr;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: fade-in 200ms ease-out; /* 用淡入替代空間移動 */ }
 }
 ```
 
-**Why this matters**: A card in a narrow sidebar stays compact, while the same card in a main content area expands—automatically, without viewport hacks.
-
-## Optical Adjustments
-
-Text at `margin-left: 0` looks indented due to letterform whitespace—use negative margin (`-0.05em`) to optically align. Geometrically centered icons often look off-center; play icons need to shift right, arrows shift toward their direction.
-
-### Touch Targets vs Visual Size
-
-Buttons can look small but need large touch targets (44px minimum). Use padding or pseudo-elements:
-
-```css
-.icon-button {
-  width: 24px;  /* Visual size */
-  height: 24px;
-  position: relative;
-}
-
-.icon-button::before {
-  content: '';
-  position: absolute;
-  inset: -10px;  /* Expand tap target to 44px */
-}
-```
-
-## Depth & Elevation
-
-Create semantic z-index scales (dropdown → sticky → modal-backdrop → modal → toast → tooltip) instead of arbitrary numbers. For shadows, create a consistent elevation scale (sm → md → lg → xl). **Key insight**: Shadows should be subtle—if you can clearly see it, it's probably too strong.
+**保留的功能動畫**：進度條、載入指示器（減速）、焦點指示器——只是移除空間移動。
 
 ---
 
-**Avoid**: Arbitrary spacing values outside your scale. Making all spacing equal (variety creates hierarchy). Creating hierarchy through size alone - combine size, weight, color, and space.
+## 5. 字型載入性能 (Font Loading Performance)
 
-# Typography
-
-## Classic Typography Principles
-
-### Vertical Rhythm
-
-Your line-height should be the base unit for ALL vertical spacing. If body text has `line-height: 1.5` on `16px` type (= 24px), spacing values should be multiples of 24px. This creates subconscious harmony—text and space share a mathematical foundation.
-
-### Modular Scale & Hierarchy
-
-The common mistake: too many font sizes that are too close together (14px, 15px, 16px, 18px...). This creates muddy hierarchy.
-
-**Use fewer sizes with more contrast.** A 5-size system covers most needs:
-
-| Role | Typical Ratio | Use Case |
-|------|---------------|----------|
-| xs | 0.75rem | Captions, legal |
-| sm | 0.875rem | Secondary UI, metadata |
-| base | 1rem | Body text |
-| lg | 1.25-1.5rem | Subheadings, lead text |
-| xl+ | 2-4rem | Headlines, hero text |
-
-Popular ratios: 1.25 (major third), 1.333 (perfect fourth), 1.5 (perfect fifth). Pick one and commit.
-
-### Readability & Measure
-
-Use `ch` units for character-based measure (`max-width: 65ch`). Line-height scales inversely with line length—narrow columns need tighter leading, wide columns need more.
-
-**Non-obvious**: Increase line-height for light text on dark backgrounds. The perceived weight is lighter, so text needs more breathing room. Add 0.05-0.1 to your normal line-height.
-
-## Font Selection & Pairing
-
-### Choosing Distinctive Fonts
-
-**Avoid the invisible defaults**: Inter, Roboto, Open Sans, Lato, Montserrat. These are everywhere, making your design feel generic. They're fine for documentation or tools where personality isn't the goal—but if you want distinctive design, look elsewhere.
-
-**Better Google Fonts alternatives**:
-- Instead of Inter → **Instrument Sans**, **Plus Jakarta Sans**, **Outfit**
-- Instead of Roboto → **Onest**, **Figtree**, **Urbanist**
-- Instead of Open Sans → **Source Sans 3**, **Nunito Sans**, **DM Sans**
-- For editorial/premium feel → **Fraunces**, **Newsreader**, **Lora**
-
-**System fonts are underrated**: `-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui` looks native, loads instantly, and is highly readable. Consider this for apps where performance > personality.
-
-### Pairing Principles
-
-**The non-obvious truth**: You often don't need a second font. One well-chosen font family in multiple weights creates cleaner hierarchy than two competing typefaces. Only add a second font when you need genuine contrast (e.g., display headlines + body serif).
-
-When pairing, contrast on multiple axes:
-- Serif + Sans (structure contrast)
-- Geometric + Humanist (personality contrast)
-- Condensed display + Wide body (proportion contrast)
-
-**Never pair fonts that are similar but not identical** (e.g., two geometric sans-serifs). They create visual tension without clear hierarchy.
-
-### Web Font Loading
-
-The layout shift problem: fonts load late, text reflows, and users see content jump. Here's the fix:
+### 避免 Layout Shift
 
 ```css
-/* 1. Use font-display: swap for visibility */
 @font-face {
   font-family: 'CustomFont';
   src: url('font.woff2') format('woff2');
   font-display: swap;
 }
 
-/* 2. Match fallback metrics to minimize shift */
+/* 匹配 Fallback 指標以最小化 shift */
 @font-face {
   font-family: 'CustomFont-Fallback';
   src: local('Arial');
-  size-adjust: 105%;        /* Scale to match x-height */
-  ascent-override: 90%;     /* Match ascender height */
-  descent-override: 20%;    /* Match descender depth */
-  line-gap-override: 10%;   /* Match line spacing */
+  size-adjust: 105%;
+  ascent-override: 90%;
+  descent-override: 20%;
+  line-gap-override: 10%;
 }
 
-body {
-  font-family: 'CustomFont', 'CustomFont-Fallback', sans-serif;
-}
+body { font-family: 'CustomFont', 'CustomFont-Fallback', sans-serif; }
 ```
 
-Tools like [Fontaine](https://github.com/unjs/fontaine) calculate these overrides automatically.
+工具：[Fontaine](https://github.com/unjs/fontaine) 可自動計算 override 值。
 
-## Modern Web Typography
-
-### Fluid Type
-
-Use `clamp(min, preferred, max)` for fluid typography. The middle value (e.g., `5vw + 1rem`) controls scaling rate—higher vw = faster scaling. Add a rem offset so it doesn't collapse to 0 on small screens.
-
-**When NOT to use fluid type**: Button text, labels, UI elements (should be consistent), very short text, or when you need precise breakpoint control.
-
-### OpenType Features
-
-Most developers don't know these exist. Use them for polish:
-
-```css
-/* Tabular numbers for data alignment */
-.data-table { font-variant-numeric: tabular-nums; }
-
-/* Proper fractions */
-.recipe-amount { font-variant-numeric: diagonal-fractions; }
-
-/* Small caps for abbreviations */
-abbr { font-variant-caps: all-small-caps; }
-
-/* Disable ligatures in code */
-code { font-variant-ligatures: none; }
-
-/* Enable kerning (usually on by default, but be explicit) */
-body { font-kerning: normal; }
-```
-
-Check what features your font supports at [Wakamai Fondue](https://wakamaifondue.com/).
-
-## Typography System Architecture
-
-Name tokens semantically (`--text-body`, `--text-heading`), not by value (`--font-size-16`). Include font stacks, size scale, weights, line-heights, and letter-spacing in your token system.
-
-## Accessibility Considerations
-
-Beyond contrast ratios (which are well-documented), consider:
-
-- **Never disable zoom**: `user-scalable=no` breaks accessibility. If your layout breaks at 200% zoom, fix the layout.
-- **Use rem/em for font sizes**: This respects user browser settings. Never `px` for body text.
-- **Minimum 16px body text**: Smaller than this strains eyes and fails WCAG on mobile.
-- **Adequate touch targets**: Text links need padding or line-height that creates 44px+ tap targets.
+### 系統字型
+`-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui` — 原生外觀、即時載入、高可讀性。當效能 > 個性時優先考慮。
 
 ---
 
-**Avoid**: More than 2-3 font families per project. Skipping fallback font definitions. Ignoring font loading performance (FOUT/FOIT). Using decorative fonts for body text.
+## 6. 無障礙工程 (Accessibility Engineering)
 
-# UX Writing
+### WCAG 對比度要求
 
-## The Button Label Problem
+| 內容類型 | AA 最低 | AAA 目標 |
+|---------|--------|---------|
+| 正文文字 | 4.5:1 | 7:1 |
+| 大文字（18px+ 或 14px 粗體） | 3:1 | 4.5:1 |
+| UI 組件、圖示 | 3:1 | 4.5:1 |
+| 非必要裝飾 | 無 | 無 |
 
-**Never use "OK", "Submit", or "Yes/No".** These are lazy and ambiguous. Use specific verb + object patterns:
+**注意**：Placeholder 文字仍需 4.5:1 對比度。
 
-| Bad | Good | Why |
-|-----|------|-----|
-| OK | Save changes | Says what will happen |
-| Submit | Create account | Outcome-focused |
-| Yes | Delete message | Confirms the action |
-| Cancel | Keep editing | Clarifies what "cancel" means |
-| Click here | Download PDF | Describes the destination |
+### 危險色彩組合
+- 淺灰色文字 + 白色背景（#1 無障礙違規）
+- 灰色文字 + 任何彩色背景（看起來灰暗死板）
+- 紅色 + 綠色（8% 男性無法區分）
+- 藍色 + 紅色（視覺振動）
+- 黃色 + 白色（幾乎必然不合格）
 
-**For destructive actions**, name the destruction:
-- "Delete" not "Remove" (delete is permanent, remove implies recoverable)
-- "Delete 5 items" not "Delete selected" (show the count)
+### 基礎要求
+- **禁止 `user-scalable=no`**：若 200% 縮放時佈局破裂，修復佈局
+- **字型用 `rem/em`**，尊重使用者瀏覽器設定，正文禁用 `px`
+- **正文最小 16px**：更小會造成閱讀壓力
+- **觸控目標至少 44×44px**：文字連結需透過 padding 或 line-height 達到
+- **語義化標籤**：優先使用 `<nav>`, `<article>`, `<aside>`, `<main>`
+- **Link 文字**需有獨立含義：「查看定價方案」而非「點擊這裡」
+- **Alt 文字**描述資訊而非圖片：「Q4 營收增長 40%」而非「圖表」
+- 裝飾性圖片使用 `alt=""`
+- Icon button 需要 `aria-label`
 
-## Error Messages: The Formula
-
-Every error message should answer: (1) What happened? (2) Why? (3) How to fix it? Example: "Email address isn't valid. Please include an @ symbol." not "Invalid input".
-
-### Error Message Templates
-
-| Situation | Template |
-|-----------|----------|
-| **Format error** | "[Field] needs to be [format]. Example: [example]" |
-| **Missing required** | "Please enter [what's missing]" |
-| **Permission denied** | "You don't have access to [thing]. [What to do instead]" |
-| **Network error** | "We couldn't reach [thing]. Check your connection and [action]." |
-| **Server error** | "Something went wrong on our end. We're looking into it. [Alternative action]" |
-
-### Don't Blame the User
-
-Reframe errors: "Please enter a date in MM/DD/YYYY format" not "You entered an invalid date".
-
-## Empty States Are Opportunities
-
-Empty states are onboarding moments: (1) Acknowledge briefly, (2) Explain the value of filling it, (3) Provide a clear action. "No projects yet. Create your first one to get started." not just "No items".
-
-## Voice vs Tone
-
-**Voice** is your brand's personality—consistent everywhere.
-**Tone** adapts to the moment.
-
-| Moment | Tone Shift |
-|--------|------------|
-| Success | Celebratory, brief: "Done! Your changes are live." |
-| Error | Empathetic, helpful: "That didn't work. Here's what to try..." |
-| Loading | Reassuring: "Saving your work..." |
-| Destructive confirm | Serious, clear: "Delete this project? This can't be undone." |
-
-**Never use humor for errors.** Users are already frustrated. Be helpful, not cute.
-
-## Writing for Accessibility
-
-**Link text** must have standalone meaning—"View pricing plans" not "Click here". **Alt text** describes information, not the image—"Revenue increased 40% in Q4" not "Chart". Use `alt=""` for decorative images. **Icon buttons** need `aria-label` for screen reader context.
-
-## Writing for Translation
-
-### Plan for Expansion
-
-German text is ~30% longer than English. Allocate space:
-
-| Language | Expansion |
-|----------|-----------|
-| German | +30% |
-| French | +20% |
-| Finnish | +30-40% |
-| Chinese | -30% (fewer chars, but same width) |
-
-### Translation-Friendly Patterns
-
-Keep numbers separate ("New messages: 3" not "You have 3 new messages"). Use full sentences as single strings (word order varies by language). Avoid abbreviations ("5 minutes ago" not "5 mins ago"). Give translators context about where strings appear.
-
-## Consistency: The Terminology Problem
-
-Pick one term and stick with it:
-
-| Inconsistent | Consistent |
-|--------------|------------|
-| Delete / Remove / Trash | Delete |
-| Settings / Preferences / Options | Settings |
-| Sign in / Log in / Enter | Sign in |
-| Create / Add / New | Create |
-
-Build a terminology glossary and enforce it. Variety creates confusion.
-
-## Avoid Redundant Copy
-
-If the heading explains it, the intro is redundant. If the button is clear, don't explain it again. Say it once, say it well.
-
-## Loading States
-
-Be specific: "Saving your draft..." not "Loading...". For long waits, set expectations ("This usually takes 30 seconds") or show progress.
-
-## Confirmation Dialogs: Use Sparingly
-
-Most confirmation dialogs are design failures—consider undo instead. When you must confirm: name the action, explain consequences, use specific button labels ("Delete project" / "Keep project", not "Yes" / "No").
-
-## Form Instructions
-
-Show format with placeholders, not instructions. For non-obvious fields, explain why you're asking.
+### 色覺障礙測試
+使用瀏覽器 DevTools → Rendering → Emulate vision deficiencies。[WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) 進行對比度驗證。
 
 ---
 
-**Avoid**: Jargon without explanation. Blaming users ("You made an error" → "This field is required"). Vague errors ("Something went wrong"). Varying terminology for variety. Humor for errors.
+**禁止**：移除焦點指示器而不提供替代。用 Placeholder 當 Label。觸控目標 < 44px。泛用錯誤訊息。自訂控件缺少 ARIA/鍵盤支援。Desktop-first 設計。分離行動版/桌面版程式碼。
