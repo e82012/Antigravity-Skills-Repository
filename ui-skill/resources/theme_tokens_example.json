@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "AntiGravity Premium UI Design Tokens",
+  "description": "符合 OKLCH 色彩空間、染色中性灰、4pt 間距系統與精緻動效的設計 Token",
+  "version": "1.0.0",
+  "tokens": {
+    "colors": {
+      "brand": {
+        "primary": {
+          "value": "oklch(60% 0.15 250)",
+          "description": "主要品牌色 - 感知均勻的 premium 科技藍"
+        },
+        "primary-light": {
+          "value": "oklch(85% 0.08 250)",
+          "description": "亮色版主要品牌色 - 用於輕度背景"
+        },
+        "primary-dark": {
+          "value": "oklch(35% 0.12 250)",
+          "description": "深色版主要品牌色 - 用於 Hover 或 Active"
+        }
+      },
+      "neutral": {
+        "light": {
+          "bg": {
+            "value": "oklch(98% 0.005 250)",
+            "description": "Light Mode 底色 - 微量冷色調染色灰，拒絕死白"
+          },
+          "surface": {
+            "value": "oklch(100% 0 0)",
+            "description": "Light Mode 表層卡片/Modal 背景"
+          },
+          "text-main": {
+            "value": "oklch(20% 0.01 250)",
+            "description": "主要文字顏色 - 深色染色灰"
+          },
+          "text-muted": {
+            "value": "oklch(55% 0.01 250)",
+            "description": "輔助/次要文字顏色 - 中度灰色"
+          },
+          "border": {
+            "value": "oklch(92% 0.01 250 / 0.5)",
+            "description": "細緻透明邊框，融入底色"
+          }
+        },
+        "dark": {
+          "bg": {
+            "value": "oklch(14% 0.01 250)",
+            "description": "Dark Mode 底色 - 絕非純黑，高級深色調染色灰"
+          },
+          "surface-1": {
+            "value": "oklch(18% 0.01 250)",
+            "description": "Dark Mode 表層高度 1 卡片背景"
+          },
+          "surface-2": {
+            "value": "oklch(22% 0.01 250)",
+            "description": "Dark Mode 表層高度 2 卡片背景（越高越亮）"
+          },
+          "text-main": {
+            "value": "oklch(92% 0.005 250)",
+            "description": "主要文字顏色 - 稍微降亮度的淺染色灰"
+          },
+          "text-muted": {
+            "value": "oklch(65% 0.01 250)",
+            "description": "輔助文字顏色"
+          },
+          "border": {
+            "value": "oklch(26% 0.01 250 / 0.5)",
+            "description": "Dark Mode 細緻邊框"
+          }
+        }
+      },
+      "semantic": {
+        "success": {
+          "value": "oklch(68% 0.16 142)",
+          "description": "成功綠 - 避免刺眼高飽和"
+        },
+        "error": {
+          "value": "oklch(62% 0.18 29)",
+          "description": "錯誤紅 - 用於緊急提示"
+        },
+        "warning": {
+          "value": "oklch(76% 0.14 75)",
+          "description": "警告黃"
+        }
+      }
+    },
+    "spacing": {
+      "base-unit": "4px",
+      "scale": {
+        "xs": {
+          "value": "4px",
+          "description": "極小間距 - 用於標籤內邊距等"
+        },
+        "sm": {
+          "value": "8px",
+          "description": "小間距 - 元素內細部元件距離"
+        },
+        "md": {
+          "value": "12px",
+          "description": "中間距 - 4pt 間距系統的精細微調"
+        },
+        "base": {
+          "value": "16px",
+          "description": "基準間距 - 常用 Padding 與 Gap"
+        },
+        "lg": {
+          "value": "24px",
+          "description": "大間距 - 元件與元件間距"
+        },
+        "xl": {
+          "value": "32px",
+          "description": "超大間距 - 區塊邊距"
+        },
+        "2xl": {
+          "value": "48px",
+          "description": "大區塊邊距"
+        }
+      }
+    },
+    "typography": {
+      "font-families": {
+        "sans": "Outfit, Figtree, system-ui, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "sizes": {
+        "xs": "0.75rem",
+        "sm": "0.875rem",
+        "base": "1rem",
+        "lg": "1.25rem",
+        "xl": "1.75rem",
+        "2xl": "2.5rem"
+      },
+      "weights": {
+        "normal": "400",
+        "medium": "500",
+        "semibold": "600",
+        "bold": "700"
+      }
+    },
+    "motion": {
+      "duration": {
+        "instant": {
+          "value": "120ms",
+          "description": "即時回饋 - 用於 Toggle, Button 按壓"
+        },
+        "normal": {
+          "value": "250ms",
+          "description": "狀態切換 - 用於 Modal 開啟或 Drawer 進場"
+        },
+        "layout": {
+          "value": "400ms",
+          "description": "大範圍佈局變化 - 用於折疊面板、卡片重新排列"
+        }
+      },
+      "easing": {
+        "ease-out-quart": {
+          "value": "cubic-bezier(0.25, 1, 0.5, 1)",
+          "description": "物理減速曲線 - 進入視窗的元素，流暢精緻 (推薦預設)"
+        },
+        "ease-in-out-quart": {
+          "value": "cubic-bezier(0.76, 0, 0.24, 1)",
+          "description": "平滑對稱曲線 - 狀態切換"
+        }
+      }
+    }
+  }
+}

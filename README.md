@@ -22,7 +22,7 @@
 **「先搞懂問題，再設計解法。」**
 - **問題拆解**：把複雜需求拆成最小可交付的功能模組。
 - **價值判斷**：評估優先級、風險和成本，避免過度設計。
-- **一致性規格**：確認輸入、輸出與邊界條件，避免需求變形。
+- **一致性規格**：確認輸入、輸出與邊界條件，避免需求變形.
 - **回饋循環**：建立快速驗證點，讓設計與開發同步迭代。
 
 ### 4. [前端工程技巧 (Frontend Engineering)](./frontend-design/SKILL.md)
@@ -38,6 +38,13 @@
 - **空間設計**：4pt 間距系統、視覺層次（模糊測試）、語義化 Elevation。
 - **排版美學**：Modular Scale、Vertical Rhythm、字型配對原則。
 - **動效美學**：100/300/500 時長法則、指數曲線、感知速度設計。
+
+### 6. [幾何圖元擬合專家 (Geometrize Expert)](./geometrize-expert/SKILL.md)
+**「用幾何拼貼重構視覺。」**
+- **演算法核心**：Hill Climbing 搜索、CMA-ES 自適應進化與殘差解析。
+- **採樣引導**：Edge-Guided Sobel 邊緣圖引導採樣與 Edge-Aware 評分。
+- **GPU 加速**：OpenCL kernel 平行評估與生命週期優化。
+- **輸出規格**：Forza Painter 座標系轉換與 JSON 邊界保護。
 
 ---
 
@@ -56,6 +63,7 @@
 `C:\Users\YourName\.gemini\antigravity\global_skills\feature-analysis-skill`
 `C:\Users\YourName\.gemini\antigravity\global_skills\frontend-design`
 `C:\Users\YourName\.gemini\antigravity\global_skills\ui-skill`
+`C:\Users\YourName\.gemini\antigravity\global_skills\geometrize-expert`
 
 ### 專案級使用
 你也可以直接將特定技能資料夾放入個別專案的 `.gemini/antigravity/skills/` 目錄下，使其僅在該專案中生效。
@@ -65,9 +73,15 @@
 AntiGravity-Skill/
 ├── global-rules/           # 執行邏輯、決策順序與安全性
 ├── code-review/            # 程式碼品質、後端審查與 CR 規範
+│   └── resources/          # CR 報告模板與檢查表
 ├── feature-analysis-skill/ # 需求分析、可行性評估與功能拆解
+│   └── resources/          # 功能需求分析與方案比較模板
 ├── frontend-design/        # 前端工程技巧、性能與無障礙
+│   └── examples/           # 無障礙互動元件與 CSS 範例
 ├── ui-skill/               # UI 美學設計、色彩、排版與動效
+│   └── resources/          # 視覺 Token 設計範本
+├── geometrize-expert/      # 幾何圖元擬合演算法與加速
+│   └── examples/           # OpenCL kernel 與座標轉換範例
 └── README.md               # 這裡就是起點
 ```
 
