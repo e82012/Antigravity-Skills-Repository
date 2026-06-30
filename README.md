@@ -52,7 +52,14 @@
 - **設計規範**：統一資源命名、HTTP Method、路徑層級與狀態碼語意。
 - **多 API 交付**：支援將複雜需求拆解為多支 API 並逐一完整描述。
 
-### 8. [AI 統一回應格式 (Unified Response Format)](./unified-response-format/SKILL.md)
+### 8. [Agent 使用日誌 (Agent Daily Log)](./agent-daily-log/SKILL.md)
+**「把每日工作與決策記錄成可追蹤的日誌。」**
+- **任務追蹤**：記錄今日完成的工作、時間與使用模型。
+- **平行處理紀錄**：保存哪些任務同時執行、哪些刻意不平行。
+- **決策案例**：留下模型選擇與方案取捨的理由，方便日後回顧。
+- **學習與規劃**：整理當日學習心得與明日計畫，支援持續改善。
+
+### 9. [AI 統一回應格式 (Unified Response Format)](./unified-response-format/SKILL.md)
 **「讓需求討論變得清楚、可驗收。」**
 - **結構化回應**：統一需求理解、已明確/未明確項目、風險與策略分析。
 - **決策品質**：強制列出風險、替代方案與前提驗證，避免盲目收斂。
@@ -77,6 +84,7 @@
 `C:\Users\YourName\.gemini\antigravity\global_skills\ui-skill`
 `C:\Users\YourName\.gemini\antigravity\global_skills\geometrize-expert`
 `C:\Users\YourName\.gemini\antigravity\global_skills\restful-api-spec-writer`
+`C:\Users\YourName\.gemini\antigravity\global_skills\agent-daily-log`
 `C:\Users\YourName\.gemini\antigravity\global_skills\unified-response-format`
 
 ### 專案級使用
@@ -97,6 +105,7 @@ AntiGravity-Skill/
 ├── geometrize-expert/      # 幾何圖元擬合演算法與加速
 │   └── examples/           # OpenCL kernel 與座標轉換範例
 ├── restful-api-spec-writer/ # RESTful API 規格書與接口設計
+├── agent-daily-log/        # Agent 日誌、任務紀錄與決策回顧
 ├── unified-response-format/ # 統一的需求、方案與驗收回應模板
 └── README.md               # 這裡就是起點
 ```
