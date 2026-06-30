@@ -46,6 +46,18 @@
 - **GPU 加速**：OpenCL kernel 平行評估與生命週期優化。
 - **輸出規格**：Forza Painter 座標系轉換與 JSON 邊界保護。
 
+### 7. [RESTful API 規格書產生器 (RESTful API Spec Writer)](./restful-api-spec-writer/SKILL.md)
+**「把需求變成可交付的 API 規格。」**
+- **標準化輸出**：強制套用完整的 RESTful API 規格書模板。
+- **設計規範**：統一資源命名、HTTP Method、路徑層級與狀態碼語意。
+- **多 API 交付**：支援將複雜需求拆解為多支 API 並逐一完整描述。
+
+### 8. [AI 統一回應格式 (Unified Response Format)](./unified-response-format/SKILL.md)
+**「讓需求討論變得清楚、可驗收。」**
+- **結構化回應**：統一需求理解、已明確/未明確項目、風險與策略分析。
+- **決策品質**：強制列出風險、替代方案與前提驗證，避免盲目收斂。
+- **驗收導向**：內建 BDD / 驗收檢查，方便對齊 PM 與工程交付。
+
 ---
 
 ## 🛠️ 安裝與使用說明
@@ -64,6 +76,8 @@
 `C:\Users\YourName\.gemini\antigravity\global_skills\frontend-design`
 `C:\Users\YourName\.gemini\antigravity\global_skills\ui-skill`
 `C:\Users\YourName\.gemini\antigravity\global_skills\geometrize-expert`
+`C:\Users\YourName\.gemini\antigravity\global_skills\restful-api-spec-writer`
+`C:\Users\YourName\.gemini\antigravity\global_skills\unified-response-format`
 
 ### 專案級使用
 你也可以直接將特定技能資料夾放入個別專案的 `.gemini/antigravity/skills/` 目錄下，使其僅在該專案中生效。
@@ -82,6 +96,8 @@ AntiGravity-Skill/
 │   └── resources/          # 視覺 Token 設計範本
 ├── geometrize-expert/      # 幾何圖元擬合演算法與加速
 │   └── examples/           # OpenCL kernel 與座標轉換範例
+├── restful-api-spec-writer/ # RESTful API 規格書與接口設計
+├── unified-response-format/ # 統一的需求、方案與驗收回應模板
 └── README.md               # 這裡就是起點
 ```
 
