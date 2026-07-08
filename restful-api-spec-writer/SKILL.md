@@ -43,88 +43,20 @@ description: 將使用者提出的功能需求（自然語言描述、使用情�
 
 ## API 規格書標準模板（強制格式，不可刪減任何區塊）
 
-每一支 API，**逐字逐節**輸出以下結構（標題層級、欄位名稱、順序固定）。若某欄位確實不適用（例如該 API 沒有 Request Body），仍須保留該標題，並明確寫「無」，**不得直接刪除整個區塊**。
+完整的標準模板（含每一欄位、表格格式、JSON 範例）已固定於 [`resources/api_spec_template.md`](./resources/api_spec_template.md)。
 
-```markdown
-## API 名稱：[簡短中文功能名稱]（English Name）
+**每次產出規格書前，務必先讀取該範本檔案，並嚴格依照其標題層級、欄位名稱、順序逐字逐節填寫**，不可自行增減或調整結構。若某欄位確實不適用（例如該 API 沒有 Request Body），仍須保留該標題，並明確寫「無」，**不得直接刪除整個區塊**。
 
-### 1. 功能說明
-[1-3 句話描述這支 API 做什麼、給誰用、在什麼情境下被呼叫]
+範本包含以下區塊：
+1. 功能說明
+2. URL Path
+3. HTTP Method
+4. Params（Path Parameters / Query Parameters）
+5. Request Body
+6. Response（成功回應 / 錯誤回應）
+7. 備註與假設
 
-### 2. URL Path
-`{METHOD} /v1/resource-path`
-
-### 3. HTTP Method
-[GET / POST / PUT / PATCH / DELETE]（擇一，並用一句話說明為何選用此 Method）
-
-### 4. Params
-
-#### 4.1 Path Parameters
-| 參數名稱 | 型別 | 必填 | 說明 |
-|---|---|---|---|
-| 範例：userId | string | 是 | 使用者唯一識別碼 |
-
-（若無 Path Parameter，填寫：「無」）
-
-#### 4.2 Query Parameters
-| 參數名稱 | 型別 | 必填 | 預設值 | 說明 |
-|---|---|---|---|---|
-| 範例：page | integer | 否 | 1 | 分頁頁碼 |
-
-（若無 Query Parameter，填寫：「無」）
-
-### 5. Request Body
-[若無 Request Body（如 GET/DELETE），填寫：「無」]
-
-| 欄位名稱 | 型別 | 必填 | 說明 |
-|---|---|---|---|
-| 範例：title | string | 是 | 訂單標題，長度 1-100 字 |
-
-**JSON 範例：**
-```json
-{
-  "title": "範例標題"
-}
-```
-
-### 6. Response
-
-#### 6.1 成功回應
-**HTTP 狀態碼：** `200 OK`（依實際情境填寫正確狀態碼）
-
-**說明：** [描述成功時回傳什麼]
-
-**JSON 範例：**
-```json
-{
-  "id": "string",
-  "title": "string",
-  "createdAt": "2026-06-30T12:00:00Z"
-}
-```
-
-#### 6.2 錯誤回應
-列出此 API 可能發生的**所有**錯誤情境，至少涵蓋：參數驗證錯誤、身份驗證/權限錯誤（若適用）、資源不存在（若適用）。
-
-**HTTP 狀態碼：** `400 Bad Request`
-
-**說明：** [錯誤情境描述]
-
-**JSON 範例：**
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "欄位 title 不可為空"
-  }
-}
-```
-
-（針對每個錯誤狀態碼重複上述「狀態碼／說明／JSON 範例」三段格式）
-
-### 7. 備註與假設（如有）
-[列出產出此規格時所做的任何合理假設，例如：「假設此 API 需要登入驗證，故於 Header 需帶 Authorization: Bearer {token}」]
-```
+多支 API 拆解時，範本亦提供「0. 需求總覽」與「附錄：共通規範」兩個輔助區塊，用法見範本檔案內說明與下方〈多支 API 的輸出順序〉。
 
 ---
 

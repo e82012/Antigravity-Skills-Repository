@@ -105,6 +105,7 @@ AntiGravity-Skill/
 ├── geometrize-expert/      # 幾何圖元擬合演算法與加速
 │   └── examples/           # OpenCL kernel 與座標轉換範例
 ├── restful-api-spec-writer/ # RESTful API 規格書與接口設計
+│   └── resources/          # API 規格書標準模板
 ├── agent-daily-log/        # Agent 日誌、任務紀錄與決策回顧
 ├── unified-response-format/ # 統一的需求、方案與驗收回應模板
 └── README.md               # 這裡就是起點
