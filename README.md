@@ -78,6 +78,14 @@
 - **平台翻譯**：iOS/macOS 術語自動對應到 Flutter / Tauri / Electron / React Native。
 - **專項模式**：App Icon、無障礙稽核、深色模式、生成式 AI UX、Liquid Glass 玻璃擬態。
 
+### 12. [Apple 流暢動效 (Apple Fluid Motion)](./apple-fluid-motion/SKILL.md)
+**「介面活起來的那一刻，它就不再像電腦，而是你的延伸。」**
+- **實作導向**：Apple WWDC《Designing Fluid Interfaces》濃縮成 Web(CSS / Pointer Events / Motion 彈簧)可落地規則。
+- **彈簧與手勢**：damping/response 參數表、velocity handoff、動量投射 `project()` 公式、rubber-banding。
+- **可中斷原則**：任何動畫隨時可被抓住並反向，一律從當前畫面值出發，避免跳動。
+- **材質與字體**：半透明玻璃層級、reduced-motion 三訊號、字體 tracking/leading 光學調校。
+- **與 apple-design 分工**：這是「怎麼做」(build)，apple-design 是「審查什麼」(review)。
+
 ---
 
 ## 🛠️ 安裝與使用說明
@@ -101,6 +109,7 @@
 `C:\Users\YourName\.gemini\antigravity\global_skills\unified-response-format`
 `C:\Users\YourName\.gemini\antigravity\global_skills\prompt-redteam`
 `C:\Users\YourName\.gemini\antigravity\global_skills\apple-design`
+`C:\Users\YourName\.gemini\antigravity\global_skills\apple-fluid-motion`
 
 ### 專案級使用
 你也可以直接將特定技能資料夾放入個別專案的 `.gemini/antigravity/skills/` 目錄下，使其僅在該專案中生效。
@@ -127,6 +136,7 @@ AntiGravity-Skill/
 │   └── resources/          # 攻擊分類手冊與紅藍軍報告模板
 ├── apple-design/           # Apple HIG 設計審查（跨平台、濃縮版）
 │   └── resources/          # hig-cheatsheet.md：55 主題濃縮速查表
+├── apple-fluid-motion/     # Apple 流暢動效實作（Web：彈簧、手勢、材質）
 └── README.md               # 這裡就是起點
 ```
 
