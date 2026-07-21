@@ -65,6 +65,12 @@
 - **決策品質**：強制列出風險、替代方案與前提驗證，避免盲目收斂。
 - **驗收導向**：內建 BDD / 驗收檢查，方便對齊 PM 與工程交付。
 
+### 10. [Prompt 紅藍軍對抗測試 (Prompt Red/Blue Team)](./prompt-redteam/SKILL.md)
+**「先讓自己人打穿一次，總比上線後被使用者打穿好。」**
+- **單一 session 分飾兩角**：同一個 agent 依序扮演紅軍（攻擊）與藍軍（防禦評估），不用另開多 agent。
+- **8 大攻擊分類**：指令覆寫、角色扮演繞過、系統提示洩漏、編碼混淆、多輪社交工程、權限提升、資料外洩誘導、假設情境繞過。
+- **結構化報告**：受測規則清單、逐項攻防紀錄、高風險摘要、可直接套用的修補措辞。
+
 ---
 
 ## 🛠️ 安裝與使用說明
@@ -86,6 +92,7 @@
 `C:\Users\YourName\.gemini\antigravity\global_skills\restful-api-spec-writer`
 `C:\Users\YourName\.gemini\antigravity\global_skills\agent-daily-log`
 `C:\Users\YourName\.gemini\antigravity\global_skills\unified-response-format`
+`C:\Users\YourName\.gemini\antigravity\global_skills\prompt-redteam`
 
 ### 專案級使用
 你也可以直接將特定技能資料夾放入個別專案的 `.gemini/antigravity/skills/` 目錄下，使其僅在該專案中生效。
@@ -108,6 +115,8 @@ AntiGravity-Skill/
 │   └── resources/          # API 規格書標準模板
 ├── agent-daily-log/        # Agent 日誌、任務紀錄與決策回顧
 ├── unified-response-format/ # 統一的需求、方案與驗收回應模板
+├── prompt-redteam/         # Prompt 紅藍軍對抗測試、攻擊分類與報告模板
+│   └── resources/          # 攻擊分類手冊與紅藍軍報告模板
 └── README.md               # 這裡就是起點
 ```
 
