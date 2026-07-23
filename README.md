@@ -5,11 +5,14 @@
 ## 🧠 技能模組 (The Skillsets)
 
 ### 1. [全局準則 (Global Rules)](./global-rules/SKILL.md)
-**「想好了再動手。」** 這是身為開發者的基本修養。
+**「想好了再動手。」** 這是身為開發者的基本修養，也是所有 AI 代理共用的規則本體。
+- **誠實與查證**：不知道就說不知道；禁止把業界通例包裝成「本專案事實」；宣稱「A 依賴 B」必須讀到實際那一行程式碼。
 - **思考先行**：拒絕盲目改 code，任何動作前先有 [Plan]。
-- **安全邊界**：保護敏感資訊，執行危險指令（如 `rm`）前必須確認。
+- **安全邊界**：保護敏感資訊，執行危險指令（如 `rm`）前必須確認；新版驗證通過前，來源檔不刪、不覆寫。
 - **終端共感**：出錯時自動讀取 Log 並修正，不當伸手牌。
 - **完工定義**：不只寫完，還要通過 Lint 與相關測試。
+- **文件撰寫**：交付文件只寫結論性事實，開發歷程留在對話與 git log。
+- **隨附參考知識**：`resources/` 內含衝突決策速查、台灣用語對照、查證深度規則、git 手冊、小工具設計準則。
 
 ### 2. [Code Review 專家 (CR Skills)](./code-review/SKILL.md)
 **「程式碼是寫給人看的，只是順便能執行。」**
@@ -91,33 +94,98 @@
 ## 🛠️ 安裝與使用說明
 
 ### 全域技能放置 (Global Setup)
-若要讓 Antigravity 在所有專案中都能自動載入這些技能，請將對應的資料夾同步至系統的全域技能目錄：
 
-- **Windows Path**: `%USERPROFILE%\.gemini\antigravity\global_skills\`
-- **Mac/Linux Path**: `~/.gemini/antigravity/global_skills/`
+Antigravity 的全域 customization root 是 `~/.gemini/config/`，技能放在其下的 `skills/`：
 
-**操作範例 (Windows):**
-將本倉庫中的資料夾移動或連結至：
-`C:\Users\YourName\.gemini\antigravity\global_skills\global-rules`
-`C:\Users\YourName\.gemini\antigravity\global_skills\code-review`
-`C:\Users\YourName\.gemini\antigravity\global_skills\feature-analysis-skill`
-`C:\Users\YourName\.gemini\antigravity\global_skills\frontend-design`
-`C:\Users\YourName\.gemini\antigravity\global_skills\ui-skill`
-`C:\Users\YourName\.gemini\antigravity\global_skills\geometrize-expert`
-`C:\Users\YourName\.gemini\antigravity\global_skills\restful-api-spec-writer`
-`C:\Users\YourName\.gemini\antigravity\global_skills\agent-daily-log`
-`C:\Users\YourName\.gemini\antigravity\global_skills\unified-response-format`
-`C:\Users\YourName\.gemini\antigravity\global_skills\prompt-redteam`
-`C:\Users\YourName\.gemini\antigravity\global_skills\apple-design`
-`C:\Users\YourName\.gemini\antigravity\global_skills\apple-fluid-motion`
+- **Windows Path**: `%USERPROFILE%\.gemini\config\skills\`
+- **Mac/Linux Path**: `~/.gemini/config/skills/`
+
+每個技能一個資料夾，內含 `SKILL.md`：
+
+```text
+~/.gemini/config/skills/
+├── global-rules/SKILL.md
+├── code-review/SKILL.md
+└── ...
+```
+
+用同步工具一次到位：
+
+```powershell
+pwsh -File tools\sync-skills.ps1 -Mode skills -Target gemini
+```
+
+> 舊路徑 `~/.gemini/antigravity/global_skills/` 已於 2026-05 遷移淘汰，不再被讀取。若該目錄下還有舊資料夾或 `.lnk` 捷徑，可自行清除。
+
+### 不複製的替代方案：註冊外部路徑
+
+Antigravity 支援用 `skills.json` 直接指向倉庫，改完立刻生效、不需要跑同步。在 `~/.gemini/config/skills.json` 寫入：
+
+```json
+{
+  "entries": [
+    { "path": "D:/AntiGravity-Skill", "exclude": ["tools", "global-rules"] }
+  ]
+}
+```
+
+`path` 支援絕對路徑與 `~/` 開頭的家目錄相對路徑，`exclude` 吃 regex。
 
 ### 專案級使用
-你也可以直接將特定技能資料夾放入個別專案的 `.gemini/antigravity/skills/` 目錄下，使其僅在該專案中生效。
+專案內建立 `.agents/skills/<name>/SKILL.md`，即可讓該技能僅在該專案生效。也可在 `.agents/skills.json` 用工作區相對路徑註冊共用目錄，隨 repo 分享給團隊。
+
+---
+
+## 🤖 讓 Claude Code 套用全局準則
+
+`global-rules` 同時是 Claude Code 的規則本體。但 Claude Code 裡「技能」與「全局準則」的載入時機不同，放錯位置會導致準則**平常不生效**：
+
+| 放置位置 | 載入時機 |
+|---|---|
+| `~/.claude/skills/<name>/SKILL.md` | **按需觸發**——輸入 `/global-rules` 或模型判斷相關時才讀取 |
+| `~/.claude/CLAUDE.md` | **每個 session 全載**，所有專案自動生效 |
+
+只放進 `skills/` 等於準則要靠人記得呼叫。要讓它真正成為全局準則，必須建立 `~/.claude/CLAUDE.md`。
+
+### 放置方式：一份本體，兩個入口
+
+規則本體只保留一份，由 `CLAUDE.md` 轉指，避免兩份條文措辭漂移：
+
+```text
+~/.claude/
+├── CLAUDE.md                    # 入口檔，只有幾行 import
+└── skills/global-rules/         # 規則本體（本倉庫同步過去）
+    ├── SKILL.md
+    └── resources/               # 五份參考知識
+```
+
+**步驟 1**：跑同步工具，把 `global-rules/SKILL.md` 覆蓋成 `~/.claude/CLAUDE.md`，參考知識放到同層 `resources/`：
+
+```powershell
+pwsh -File tools\sync-skills.ps1 -Mode rules -Target claude -DryRun   # 先預演
+pwsh -File tools\sync-skills.ps1 -Mode rules -Target claude           # 確認後執行
+```
+
+手動放置也可以，落點與注意事項見 [tools/README.md](./tools/README.md)。
+
+**步驟 2**：驗證。開一個**全新 session**，不輸入任何 slash command，直接問「§4.1 的鐵則是什麼？」——答得出「新版本驗證通過前，來源檔不刪、不覆寫」代表載入成功。
+
+`~/.claude/CLAUDE.md` 保存的是準則全文而非 `@import` 轉指，因為各代理的 import 語法不一致；由同步工具從單一來源產生，副本不會漂移。**目標端是產生物，要改規則請改本倉庫再重跑同步。**
+
+### 注意事項
+
+| 項目 | 說明 |
+|---|---|
+| 適用範圍 | `~/.claude/CLAUDE.md` 對該機器上**所有專案**生效，包含繁體中文回覆、台灣用語、中文註解。個別專案若需例外，在該專案自己的 `CLAUDE.md` 覆蓋——依 SKILL.md §12.1，專案規則優先於公版。 |
+| 避免重複載入 | 專案級 `CLAUDE.md` 與使用者級 `CLAUDE.md` 會**疊加載入**。專案端不要再抄一份準則條文，只寫該專案專屬設定（環境、工具、路徑慣例）。 |
+| 參考知識路徑 | `SKILL.md` §12.2 的 `resources/` 路徑以 SKILL.md 所在目錄為基準，即 `~/.claude/skills/global-rules/resources/`。 |
+| 其他 CLI agent | 不會自動讀 `CLAUDE.md` 的代理（如 Codex）需另備 `AGENTS.md` 當入口，同樣只轉指、不複製條文。 |
 
 ## 📂 目錄結構
 ```text
 AntiGravity-Skill/
-├── global-rules/           # 執行邏輯、決策順序與安全性
+├── global-rules/           # 誠實查證、執行邏輯、決策順序、安全性與文件規範
+│   └── resources/          # 衝突決策速查、台灣用語對照、查證深度、git 手冊、工具設計準則
 ├── code-review/            # 程式碼品質、後端審查與 CR 規範
 │   └── resources/          # CR 報告模板與檢查表
 ├── feature-analysis-skill/ # 需求分析、可行性評估與功能拆解
@@ -137,7 +205,24 @@ AntiGravity-Skill/
 ├── apple-design/           # Apple HIG 設計審查（跨平台、濃縮版）
 │   └── resources/          # hig-cheatsheet.md：55 主題濃縮速查表
 ├── apple-fluid-motion/     # Apple 流暢動效實作（Web：彈簧、手勢、材質）
+├── tools/                  # 同步工具
+│   ├── sync-skills.ps1     # 全局準則／技能一鍵同步到 Claude、Gemini、Codex
+│   └── README.md           # 用法、退出碼、刻意不做什麼
 └── README.md               # 這裡就是起點
 ```
 
+## 🔧 本機工具速查
+
+沒列進這張表的工具等於不存在，下一個 session 不會知道它，還可能重造一個。
+
+| 工具 | 用途 | 詳見 |
+|------|------|------|
+| `tools/sync-skills.ps1` | 把本倉庫的全局準則與技能覆蓋到 Claude Code／Gemini Antigravity／Codex | [tools/README.md](./tools/README.md) |
+
 ---
+**最後更新**: 2026-07-23
+**維護者**: 開發團隊
+**文件版本**: v2.0
+**變更記錄**（里程碑，最多 5 條）:
+- v2.0 (2026-07-23): 新增 `tools/sync-skills.ps1` 跨代理同步工具與本機工具速查表；新增「讓 Claude Code 套用全局準則」章節；global-rules 升級為跨代理規則本體並隨附五份參考知識
+- v1.0 (2026-01-22): 首版，建立技能模組索引與 Antigravity 全域／專案級安裝說明
