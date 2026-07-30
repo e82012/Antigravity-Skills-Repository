@@ -89,6 +89,14 @@
 - **材質與字體**：半透明玻璃層級、reduced-motion 三訊號、字體 tracking/leading 光學調校。
 - **與 apple-design 分工**：這是「怎麼做」(build)，apple-design 是「審查什麼」(review)。
 
+### 13. [Gemini 紅藍對抗審查 (Gemini Red/Blue Team Review)](./gemini-redteam/SKILL.md)
+**「一個人審查自己的方案永遠有盲點，找另一個獨立的 AI 來挑刺。」**
+- **雙 AI 對抗**：Claude Code 提方案 → 呼叫 `gemini` CLI 唯讀審查（`--approval-mode plan`，不執行任何操作）→ Claude 回應質疑，最多再來一輪。
+- **固定收斂上限**：最多 2 輪 + 1 個 Claude 內部認定的最終輪，仍無共識就把雙方論點原文並列給使用者，不擅自選邊。
+- **防迎合設計**：不讓 Gemini 知道是最終輪，並內建反迎合（anti-sycophancy）prompt，避免「時程壓力」「態度強硬」這類非技術理由被誤判為風險已解決。
+- **模型額度 fallback**：`scripts/models.json` 維護備援模型清單，額度用盡自動換下一個，不需要事前查額度。
+- **手動觸發**：僅在使用者明確要求時啟動，不因方案看起來複雜就自行判斷該不該叫 Gemini。
+
 ---
 
 ## 🛠️ 安裝與使用說明
@@ -205,6 +213,8 @@ AntiGravity-Skill/
 ├── apple-design/           # Apple HIG 設計審查（跨平台、濃縮版）
 │   └── resources/          # hig-cheatsheet.md：55 主題濃縮速查表
 ├── apple-fluid-motion/     # Apple 流暢動效實作（Web：彈簧、手勢、材質）
+├── gemini-redteam/         # Claude Code × Gemini CLI 紅藍對抗審查
+│   └── scripts/            # consult-gemini.ps1（唯讀呼叫封裝）與 models.json（模型備援清單）
 ├── tools/                  # 同步工具
 │   ├── sync-skills.ps1     # 全局準則／技能一鍵同步到 Claude、Gemini、Codex
 │   └── README.md           # 用法、退出碼、刻意不做什麼
@@ -220,9 +230,10 @@ AntiGravity-Skill/
 | `tools/sync-skills.ps1` | 把本倉庫的全局準則與技能覆蓋到 Claude Code／Gemini Antigravity／Codex | [tools/README.md](./tools/README.md) |
 
 ---
-**最後更新**: 2026-07-23
+**最後更新**: 2026-07-30
 **維護者**: 開發團隊
-**文件版本**: v2.0
+**文件版本**: v2.1
 **變更記錄**（里程碑，最多 5 條）:
+- v2.1 (2026-07-30): 新增第 13 個技能 `gemini-redteam`（Claude Code × Gemini CLI 紅藍對抗審查），目錄結構同步補上
 - v2.0 (2026-07-23): 新增 `tools/sync-skills.ps1` 跨代理同步工具與本機工具速查表；新增「讓 Claude Code 套用全局準則」章節；global-rules 升級為跨代理規則本體並隨附五份參考知識
 - v1.0 (2026-01-22): 首版，建立技能模組索引與 Antigravity 全域／專案級安裝說明
