@@ -1,0 +1,7 @@
+{
+  "fallback_order": [
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite"
+  ],
+  "notes": "兩個模型皆已驗證有額度（2026-07-30 實測）。gemini-3.5-flash 已於同日打光免費額度，暫不建議放入。要加入更多備援模型前，請先手動執行 gemini -m <model> -p \"test\" 確認帳號實際有額度，再加進這個陣列；陣列越後面代表優先度越低，額度用盡會自動往下一個換。"
+}
