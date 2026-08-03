@@ -97,6 +97,23 @@
 - **模型額度 fallback**：`scripts/models.json` 維護備援模型清單，額度用盡自動換下一個，不需要事前查額度。
 - **手動觸發**：僅在使用者明確要求時啟動，不因方案看起來複雜就自行判斷該不該叫 Gemini。
 
+### 14. [工程流程技能組 (Engineering Flow)](./skill-map/SKILL.md)
+**「想法 → 出貨，每一步都停在一個驗得出來的判準上。」** 14 個小而可組合的技能，改編自 [mattpocock/skills](https://github.com/mattpocock/skills)（MIT）。
+
+- **兩種調用模式**：`disable-model-invocation` 把「要不要讓模型看到」變成明碼標價的取捨——保留 description 付上下文負載，拿掉則由人當索引。
+- **原語＋包裝層**：`grilling` 是唯一的拷問本體，`grill-me`／`grill-with-docs` 只是兩個包裝層，改一次全部生效。
+- **回饋迴路優先**：`bug-loop` 沒拿到一條會亮**紅燈**的緊迴路，就禁止進入假設階段——先腦補理論再找證據，從流程層擋掉。
+- **雙軸平行審查**：`diff-review` 把規範軸與規格軸拆給兩個 sub-agent 並行，避免 context 互相污染；判斷準則直接引用既有的 `code-review`，不重抄。
+- **從哪開始**：忘記該用哪個就叫 [`skill-map`](./skill-map/SKILL.md)（路由）；想改技能先讀 [`skill-craft`](./skill-craft/SKILL.md)（方法論本體＋詞彙表）。
+- **使用說明**：落地方式、技能速查表、三個實戰劇本與狀況排除，見 [使用說明](./skill-map/resources/usage-guide.md)。
+
+| 分層 | 技能 |
+|------|------|
+| 路由與方法論 | `skill-map`、`skill-craft` |
+| 對齊 | `grilling`（原語）、`grill-me`、`grill-with-docs`、`domain-language` |
+| 執行 | `tdd`、`bug-loop`、`diff-review` |
+| 流程 | `setup-flow`、`to-spec`、`to-tickets`、`implement`、`handoff` |
+
 ---
 
 ## 🛠️ 安裝與使用說明
@@ -215,6 +232,28 @@ AntiGravity-Skill/
 ├── apple-fluid-motion/     # Apple 流暢動效實作（Web：彈簧、手勢、材質）
 ├── gemini-redteam/         # Claude Code × Gemini CLI 紅藍對抗審查
 │   └── scripts/            # consult-gemini.ps1（唯讀呼叫封裝）與 models.json（模型備援清單）
+│
+│   # ── 工程流程技能組（想法 → 出貨）─────────────────────
+├── skill-map/              # 路由：忘記該用哪個技能時問它
+│   └── resources/          # usage-guide.md：使用說明；source-analysis.md：設計依據
+├── skill-craft/            # 寫技能與改技能的準則（方法論本體）
+│   └── GLOSSARY.md         # 22 個詞條：調用、資訊階層、操舵、修剪四軸
+├── grilling/               # 拷問原語（模型可調用，唯一本體）
+├── grill-me/               # 包裝層：無倉庫時的拷問
+├── grill-with-docs/        # 包裝層：有倉庫時的拷問，順手寫 CONTEXT.md 與 ADR
+├── domain-language/        # 領域語言：詞彙表與 ADR 維護紀律
+├── tdd/                    # 紅綠循環、接縫、測試反模式
+│   └── resources/          # test-quality.md：好壞測試對照與 mock 界線
+├── bug-loop/               # 除錯：回饋迴路優先於推理
+│   └── resources/          # feedback-loops.md：十種造迴路的方式
+├── diff-review/            # 雙軸差異審查（規範軸 × 規格軸，平行 sub-agent）
+├── setup-flow/             # 流程初始化：議題追蹤與領域文件配置
+├── to-spec/                # 把對話收斂成規格
+├── to-tickets/             # 切成曳光彈工單，標明阻擋邊
+├── implement/              # 依票實作：tdd → diff-review → commit
+├── handoff/                # 交棒：把對話壓成檔案，換新 session 接手
+│   # ───────────────────────────────────────────────
+│
 ├── tools/                  # 同步工具
 │   ├── sync-skills.ps1     # 全局準則／技能一鍵同步到 Claude、Gemini、Codex
 │   └── README.md           # 用法、退出碼、刻意不做什麼
@@ -230,10 +269,11 @@ AntiGravity-Skill/
 | `tools/sync-skills.ps1` | 把本倉庫的全局準則與技能覆蓋到 Claude Code／Gemini Antigravity／Codex | [tools/README.md](./tools/README.md) |
 
 ---
-**最後更新**: 2026-07-30
+**最後更新**: 2026-08-03
 **維護者**: 開發團隊
-**文件版本**: v2.1
+**文件版本**: v3.0
 **變更記錄**（里程碑，最多 5 條）:
+- v3.0 (2026-08-03): 新增工程流程技能組共 14 個技能（改編自 mattpocock/skills，MIT），涵蓋路由、方法論、對齊、執行與流程五層；首次引入「使用者可調用 vs 模型可調用」的雙負載設計，以及原語＋包裝層的單一真實來源結構
 - v2.1 (2026-07-30): 新增第 13 個技能 `gemini-redteam`（Claude Code × Gemini CLI 紅藍對抗審查），目錄結構同步補上
 - v2.0 (2026-07-23): 新增 `tools/sync-skills.ps1` 跨代理同步工具與本機工具速查表；新增「讓 Claude Code 套用全局準則」章節；global-rules 升級為跨代理規則本體並隨附五份參考知識
 - v1.0 (2026-01-22): 首版，建立技能模組索引與 Antigravity 全域／專案級安裝說明
