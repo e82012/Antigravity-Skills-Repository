@@ -269,11 +269,11 @@ AntiGravity-Skill/
 | `tools/sync-skills.ps1` | 把本倉庫的全局準則與技能覆蓋到 Claude Code／Gemini Antigravity／Codex | [tools/README.md](./tools/README.md) |
 
 ---
-**最後更新**: 2026-08-03
+**最後更新**: 2026-08-04
 **維護者**: 開發團隊
 **文件版本**: v3.0
 **變更記錄**（里程碑，最多 5 條）:
-- v3.0 (2026-08-03): 新增工程流程技能組共 14 個技能（改編自 mattpocock/skills，MIT），涵蓋路由、方法論、對齊、執行與流程五層；首次引入「使用者可調用 vs 模型可調用」的雙負載設計，以及原語＋包裝層的單一真實來源結構
+- v3.0 (2026-08-04): 新增工程流程技能組共 14 個技能（改編自 mattpocock/skills，MIT），涵蓋路由、方法論、對齊、執行與流程五層；首次引入「使用者可調用 vs 模型可調用」的雙負載設計，以及原語＋包裝層的單一真實來源結構
 - v2.1 (2026-07-30): 新增第 13 個技能 `gemini-redteam`（Claude Code × Gemini CLI 紅藍對抗審查），目錄結構同步補上
 - v2.0 (2026-07-23): 新增 `tools/sync-skills.ps1` 跨代理同步工具與本機工具速查表；新增「讓 Claude Code 套用全局準則」章節；global-rules 升級為跨代理規則本體並隨附五份參考知識
 - v1.0 (2026-01-22): 首版，建立技能模組索引與 Antigravity 全域／專案級安裝說明
