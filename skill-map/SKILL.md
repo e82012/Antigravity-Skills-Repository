@@ -52,6 +52,10 @@ disable-model-invocation: true
 
 **`setup-flow`** — 第一次跑工程流程之前先跑它，設定議題追蹤系統與領域文件配置。`to-spec`、`to-tickets`、`implement` 都假設它跑過了。
 
+## 兩種強度：Guides 版與 Sensor 版
+
+`outcome-check` 是**前饋 Guides**——寫給模型讀的指引,靠模型自願遵守。想要**代碼層真的擋得住**,不靠模型自覺,用 **`outcome-check-harness`**——裝一個 `Stop` hook,agent 想跳過驗收也跳不過。這是手動安裝的工具(不是自動觸發的技能),因為它會修改目標專案的持續性配置(`.claude/settings.json`),必須明確授權才能裝。細節見 [`outcome-check-harness/README.md`](../outcome-check-harness/README.md)。
+
 ## 與既有技能的分工
 
 | 需求 | 用這個 | 為什麼不是另一個 |

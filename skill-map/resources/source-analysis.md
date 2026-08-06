@@ -77,10 +77,17 @@
 | Ralph／Symphony／Cron 的外層排程框架 | 本組的 `to-tickets` + 每張票開新 session 已經是同一個精神（進度存磁碟不存 context），不需要另建一層排程機制 |
 | 框架選型（Codex SDK／LangGraph／Strands 等） | 那是「自建 agent runtime」的決策，本組是套在既有 Claude Code／Antigravity 上的技能，不適用 |
 
+### 延伸：`outcome-check-harness`——從 Guides 做到 Sensor
+
+`outcome-check` 這個 SKILL 本身，用文章的 Böckeler 2×2 框架檢視，仍然落在**前饋 Guides（推論式）**這一格——寫給模型讀的指引，靠模型自願遵守，不是文章講的**回饋 Sensors（運算式強制）**。2026-08-06 補做了 [`outcome-check-harness`](../../outcome-check-harness/README.md)：用 Claude Code 的 `Stop` hook 把同一個概念做成代碼層的真實攔截。
+
+這不是「改編設計」，是「照著查證過的官方 hooks 規格動手實作」，過程中端到端測過四個分支，抓到並修正兩個真實 bug（UTF-8 編碼、裁判回覆的 markdown code fence），細節見該工具自己的 README，不在這裡重複。
+
 ---
-**最後更新**: 2026-08-04
+**最後更新**: 2026-08-06
 **維護者**: 開發團隊
-**文件版本**: v2.0
+**文件版本**: v2.1
 **變更記錄**（里程碑，最多 5 條）:
+- v2.1 (2026-08-06): 新增 `outcome-check-harness`——把 `outcome-check` 從 Guides 做成 Sensor，Stop hook 真實攔截，經端到端測試修正兩個 bug
 - v2.0 (2026-08-04): 新增第二個來源 ihower 的 Harness Engineering 系列——`outcome-check`、迭代上限、Bitter Lesson 三處設計依據，與刻意不學的三項
 - v1.0 (2026-08-04): 首版，記錄九個學到的手法與四項刻意不學的差異

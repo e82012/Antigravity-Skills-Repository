@@ -115,6 +115,8 @@
 | 執行 | `tdd`、`bug-loop`、`diff-review`、`outcome-check` |
 | 流程 | `setup-flow`、`to-spec`、`to-tickets`、`implement`、`handoff` |
 
+**`outcome-check` 只是 Guides**——寫給模型讀的指引，靠模型自願遵守。要代碼層真正擋得住，用 [`outcome-check-harness`](./outcome-check-harness/README.md)：裝一個 Claude Code 的 `Stop` hook，模型想跳過驗收也跳不過。這是需要明確授權才能安裝的工具（會修改目標專案的 `settings.json`），不是自動觸發的技能——經端到端實測跑過四個分支，過程中修正了兩個真實 bug（UTF-8 編碼、裁判回覆的 markdown code fence）。
+
 ---
 
 ## 🛠️ 安裝與使用說明
@@ -254,6 +256,9 @@ AntiGravity-Skill/
 ├── to-tickets/             # 切成曳光彈工單，標明阻擋邊
 ├── implement/              # 依票實作：tdd → diff-review → outcome-check → commit
 ├── handoff/                # 交棒：把對話壓成檔案，換新 session 接手
+├── outcome-check-harness/  # outcome-check 的代碼強制版：Stop hook + 獨立 headless 裁判
+│   ├── hooks/              # stop-outcome-check.ps1：真正的攔截邏輯
+│   └── install.ps1         # 一鍵裝進任一專案（project／user 兩種範圍）
 │   # ───────────────────────────────────────────────
 │
 ├── tools/                  # 同步工具
@@ -271,12 +276,12 @@ AntiGravity-Skill/
 | `tools/sync-skills.ps1` | 把本倉庫的全局準則與技能覆蓋到 Claude Code／Gemini Antigravity／Codex | [tools/README.md](./tools/README.md) |
 
 ---
-**最後更新**: 2026-08-04
+**最後更新**: 2026-08-06
 **維護者**: 開發團隊
-**文件版本**: v3.1
+**文件版本**: v3.2
 **變更記錄**（里程碑，最多 5 條）:
+- v3.2 (2026-08-06): 新增 `outcome-check-harness`——把 `outcome-check` 從提示詞層的 Guides 做成 Claude Code Stop hook 的代碼層 Sensor，經端到端實測（四個分支）修正兩個真實 bug
 - v3.1 (2026-08-04): 新增第 15 個技能 `outcome-check`（改編自 ihower 的 Harness Engineering 系列）——全新 context 裁判實際操作驗收，`implement` 收尾接上；`bug-loop`／`implement` 補迭代上限呼應全局準則 §8
 - v3.0 (2026-08-04): 新增工程流程技能組共 14 個技能（改編自 mattpocock/skills，MIT），涵蓋路由、方法論、對齊、執行與流程五層；首次引入「使用者可調用 vs 模型可調用」的雙負載設計，以及原語＋包裝層的單一真實來源結構
 - v2.1 (2026-07-30): 新增第 13 個技能 `gemini-redteam`（Claude Code × Gemini CLI 紅藍對抗審查），目錄結構同步補上
-- v2.0 (2026-07-23): 新增 `tools/sync-skills.ps1` 跨代理同步工具與本機工具速查表；新增「讓 Claude Code 套用全局準則」章節；global-rules 升級為跨代理規則本體並隨附五份參考知識
-- v1.0 (2026-01-22): 首版，建立技能模組索引與 Antigravity 全域／專案級安裝說明
+- v1.0–v2.0 (2026-01-22～2026-07-23): 首版建立技能模組索引，至新增跨代理同步工具、global-rules 升級為跨代理規則本體
