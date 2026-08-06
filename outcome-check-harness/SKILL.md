@@ -10,22 +10,28 @@ disable-model-invocation: true
 
 ## 什麼時候用
 
-**只在使用者明確要求時安裝。** 這會修改目標專案的 `.claude/settings.json`(持續性配置),依安全規則需要明確許可,不能因為「這個任務聽起來需要嚴格驗收」就自己動手裝。
+**安裝(第一次跑 `install.ps1`)只在使用者明確要求時做。** 這會修改 `~/.claude/settings.json`(持續性配置),依安全規則需要明確許可,不能因為「這個任務聽起來需要嚴格驗收」就自己動手裝。
+
+只裝一次,對這台機器上所有專案生效,**完全不碰任何專案目錄**——第一版曾經支援裝進單一專案,實測會污染沒有 `.gitignore` 排除 `.claude/` 的專案,已經拿掉,細節見 [README.md](README.md) 的「設計變更記錄」。
 
 ## 使用方式
 
 1. **讀 [README.md](README.md)** 了解機制、成本、已知限制——這不是零成本的東西,每次 Stop 都會多花一次 API 呼叫。
-2. **確認安裝範圍**:`project`(只對當前專案生效)還是 `user`(對這台機器所有專案生效)。使用者沒說清楚就問,不要自己選——這是一個會影響其他專案行為的決定。
-3. **跑安裝腳本**:
+2. **裝一次(如果還沒裝過)**:
 
    ```powershell
-   pwsh -File outcome-check-harness/install.ps1 -Scope project -Root <目標專案路徑> -DryRun
+   pwsh -File outcome-check-harness/install.ps1 -DryRun   # 先預演給使用者看
+   pwsh -File outcome-check-harness/install.ps1           # 確認後執行
    ```
 
-   先 `-DryRun` 給使用者看過要動什麼,確認後拿掉 `-DryRun` 執行。
+3. **對想啟用的專案設定驗收條件**(這一步不需要重新安裝,也不會碰專案目錄):
 
-4. **提醒使用者**:裝完不會立刻攔任何東西——要等 `.claude/outcome-check/rubric.md`(項目級)寫入真實驗收條件才會啟動。範本檔案已經幫你放好,裡面的說明文字自己會被裁判讀到,寫驗收條件時避免跟範本裡的操作說明混在一起(實測發現裁判會把「刪掉這個範例」這句話也當成驗收項目的一部分去檢查)。
+   ```powershell
+   pwsh -File outcome-check-harness/set-rubric.ps1 -ProjectRoot <專案路徑> -RubricText "- [ ] xxx"
+   ```
+
+4. **提醒使用者**:沒設定 rubric 的專案永遠零成本靜默放行;設定後下一次 Stop 就會開始被裁判驗收。寫驗收條件時只放純粹的判準,不要混操作說明——實測發現裁判會把說明文字也當成驗收項目的一部分去檢查。
 
 ## 完成判準
 
-安裝腳本跑完 exit code 0;`.claude/settings.json` 裡看得到新增的 `hooks.Stop` 條目,且既有設定沒有被覆蓋掉(跑一次 `-DryRun` 或裝完後讀一次檔案確認);使用者知道範本 rubric 需要自己填才會生效。
+`install.ps1` 跑完 exit code 0,且沒有在任何專案目錄裡建立檔案(這是硬性要求,建了就是回退到第一版的錯誤設計);`set-rubric.ps1 -Show` 對目標專案能看到剛寫入的驗收條件。

@@ -1,15 +1,22 @@
 #Requires -Version 7.0
 <#
 Stop hook：outcome-check 的代碼強制版。
-讀 stdin JSON，若當前專案有 rubric，派一個獨立 headless claude -p 裁判驗證，
-不通過就用 decision:block 把理由打回主線，逼下一輪重做。
+讀 stdin JSON，若這個專案在使用者本機的全域狀態目錄裡有 rubric，
+派一個獨立 headless claude -p 裁判驗證，不通過就用 decision:block
+把理由打回主線，逼下一輪重做。
+
+刻意設計：rubric／計數器都不放在專案目錄裡，一律放
+~/.claude/outcome-check-state/<專案 key>/。第一版把這些放在
+<專案>/.claude/outcome-check/ 底下，實測發現沒有 .gitignore 排除
+.claude/ 的專案會把這些檔案 commit 進去——這是真實踩過的坑，不是
+預防性寫法，見 README「設計變更記錄」。
 
 已知限制（讀完再用）：
 - 官方文件未記載 hook 內呼叫 claude -p 的遞迴行為，本腳本用環境變數自行防遞迴，
   不是官方保證的機制。
-- headless claude -p 是否預設帶完整工具權限（讀檔/跑指令）未經官方文件確認，
-  若裁判判定全部落在「無法判定」，先懷疑是不是工具權限不足。
-- 沒有真實 Stop 事件跑過這支腳本，行為未經端到端驗證。
+- headless claude -p 不是無限制工具權限，受 permission 系統管控（實測確認）。
+- 沒有真實 Stop 事件跑過這支腳本，行為未經端到端驗證；曾用模擬 stdin 測過
+  四個分支，細節見 README。
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -31,8 +38,14 @@ try {
 $cwd = $payload.cwd
 if (-not $cwd) { $cwd = (Get-Location).Path }
 
-$rubricPath   = Join-Path $cwd '.claude\outcome-check\rubric.md'
-$attemptsPath = Join-Path $cwd '.claude\outcome-check\.attempts'
+# ── 專案路徑 → 使用者本機的全域狀態目錄，不碰專案本身 ──
+$safeName = ($cwd -replace '[:\\/]', '-').Trim('-')
+$hashBytes = [System.Security.Cryptography.MD5]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($cwd))
+$shortHash = ([System.BitConverter]::ToString($hashBytes) -replace '-', '').Substring(0, 8).ToLower()
+$stateDir = Join-Path $HOME ".claude\outcome-check-state\$safeName-$shortHash"
+
+$rubricPath   = Join-Path $stateDir 'rubric.md'
+$attemptsPath = Join-Path $stateDir '.attempts'
 
 # ── 沒有 rubric 就不是這個任務的管轄範圍，直接放行 ──
 if (-not (Test-Path $rubricPath)) {

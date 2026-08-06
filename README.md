@@ -115,7 +115,7 @@
 | 執行 | `tdd`、`bug-loop`、`diff-review`、`outcome-check` |
 | 流程 | `setup-flow`、`to-spec`、`to-tickets`、`implement`、`handoff` |
 
-**`outcome-check` 只是 Guides**——寫給模型讀的指引，靠模型自願遵守。要代碼層真正擋得住，用 [`outcome-check-harness`](./outcome-check-harness/README.md)：裝一個 Claude Code 的 `Stop` hook，模型想跳過驗收也跳不過。這是需要明確授權才能安裝的工具（會修改目標專案的 `settings.json`），不是自動觸發的技能——經端到端實測跑過四個分支，過程中修正了兩個真實 bug（UTF-8 編碼、裁判回覆的 markdown code fence）。
+**`outcome-check` 只是 Guides**——寫給模型讀的指引，靠模型自願遵守。要代碼層真正擋得住，用 [`outcome-check-harness`](./outcome-check-harness/README.md)：裝一個 Claude Code 的 `Stop` hook，模型想跳過驗收也跳不過。**只裝一次、對所有專案生效，不會碰任何專案目錄**——驗收條件用 `set-rubric.ps1` 針對單一專案設定，寫在使用者本機，不進該專案版控。這是需要明確授權才能安裝的工具，不是自動觸發的技能。第一版曾經把驗收條件放在專案目錄裡，拿真實專案測試後發現會被 `git status` 追蹤進去，已改成現在這個設計——過程與教訓見該工具自己的 README。
 
 ---
 
@@ -258,7 +258,8 @@ AntiGravity-Skill/
 ├── handoff/                # 交棒：把對話壓成檔案，換新 session 接手
 ├── outcome-check-harness/  # outcome-check 的代碼強制版：Stop hook + 獨立 headless 裁判
 │   ├── hooks/              # stop-outcome-check.ps1：真正的攔截邏輯
-│   └── install.ps1         # 一鍵裝進任一專案（project／user 兩種範圍）
+│   ├── install.ps1         # 裝一次，全域生效，不碰任何專案目錄
+│   └── set-rubric.ps1      # 對單一專案啟用／查看／停用，寫在使用者本機
 │   # ───────────────────────────────────────────────
 │
 ├── tools/                  # 同步工具
@@ -280,7 +281,7 @@ AntiGravity-Skill/
 **維護者**: 開發團隊
 **文件版本**: v3.2
 **變更記錄**（里程碑，最多 5 條）:
-- v3.2 (2026-08-06): 新增 `outcome-check-harness`——把 `outcome-check` 從提示詞層的 Guides 做成 Claude Code Stop hook 的代碼層 Sensor，經端到端實測（四個分支）修正兩個真實 bug
+- v3.2 (2026-08-06): 新增 `outcome-check-harness`——把 `outcome-check` 從提示詞層的 Guides 做成 Claude Code Stop hook 的代碼層 Sensor，全域安裝一次即對所有專案生效，不碰任何專案目錄；經端到端實測（含真實專案）修正三個真實 bug
 - v3.1 (2026-08-04): 新增第 15 個技能 `outcome-check`（改編自 ihower 的 Harness Engineering 系列）——全新 context 裁判實際操作驗收，`implement` 收尾接上；`bug-loop`／`implement` 補迭代上限呼應全局準則 §8
 - v3.0 (2026-08-04): 新增工程流程技能組共 14 個技能（改編自 mattpocock/skills，MIT），涵蓋路由、方法論、對齊、執行與流程五層；首次引入「使用者可調用 vs 模型可調用」的雙負載設計，以及原語＋包裝層的單一真實來源結構
 - v2.1 (2026-07-30): 新增第 13 個技能 `gemini-redteam`（Claude Code × Gemini CLI 紅藍對抗審查），目錄結構同步補上

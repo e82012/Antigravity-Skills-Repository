@@ -81,13 +81,18 @@
 
 `outcome-check` 這個 SKILL 本身，用文章的 Böckeler 2×2 框架檢視，仍然落在**前饋 Guides（推論式）**這一格——寫給模型讀的指引，靠模型自願遵守，不是文章講的**回饋 Sensors（運算式強制）**。2026-08-06 補做了 [`outcome-check-harness`](../../outcome-check-harness/README.md)：用 Claude Code 的 `Stop` hook 把同一個概念做成代碼層的真實攔截。
 
-這不是「改編設計」，是「照著查證過的官方 hooks 規格動手實作」，過程中端到端測過四個分支，抓到並修正兩個真實 bug（UTF-8 編碼、裁判回覆的 markdown code fence），細節見該工具自己的 README，不在這裡重複。
+這不是「改編設計」，是「照著查證過的官方 hooks 規格動手實作」，過程中端到端測過完整鏈路，抓到並修正三個真實 bug（見下方）。
+
+**第二次真實測試又抓到一個更根本的設計缺陷**：第一版把驗收條件（rubric）與計數器放在 `<專案>/.claude/outcome-check/`，對真實專案（`Star888Background`）跑一次安裝後，這些檔案直接進了 `git status` 的暫存區——這個專案的 `.claude/` 沒被 `.gitignore` 排除。改用 user 範圍裝 hook 本身不夠，因為 rubric 仍然被設計成放在專案目錄裡。修法是把 rubric 與計數器都搬到使用者本機（`~/.claude/outcome-check-state/`，用專案路徑算出對應 key），`install.ps1` 現在只做「裝 hook」這一件事、永遠不建立任何專案內檔案，新增 `set-rubric.ps1` 專門處理「對某個專案啟用/查看/停用」。細節見該工具自己的 README，不在這裡重複。
+
+這次的教訓呼應了本組自己在教的東西——`feature-analysis-skill` 的路燈效應規則六：查證時容易停在方便查的地方（「-DryRun 印出來的動作看起來合理」），沒去查真正該查的地方（「這個專案的 `.gitignore` 排除了什麼」）。是使用者在真實測試後指出這個落差，不是我自己在動手前就想到的。
 
 ---
 **最後更新**: 2026-08-06
 **維護者**: 開發團隊
-**文件版本**: v2.1
+**文件版本**: v2.2
 **變更記錄**（里程碑，最多 5 條）:
+- v2.2 (2026-08-06): `outcome-check-harness` 拿掉 project 安裝範圍，rubric 全部搬到使用者本機——修正實測對 Star888Background 造成的專案污染
 - v2.1 (2026-08-06): 新增 `outcome-check-harness`——把 `outcome-check` 從 Guides 做成 Sensor，Stop hook 真實攔截，經端到端測試修正兩個 bug
 - v2.0 (2026-08-04): 新增第二個來源 ihower 的 Harness Engineering 系列——`outcome-check`、迭代上限、Bitter Lesson 三處設計依據，與刻意不學的三項
 - v1.0 (2026-08-04): 首版，記錄九個學到的手法與四項刻意不學的差異

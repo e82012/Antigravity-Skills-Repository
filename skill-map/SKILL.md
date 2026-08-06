@@ -54,7 +54,7 @@ disable-model-invocation: true
 
 ## 兩種強度：Guides 版與 Sensor 版
 
-`outcome-check` 是**前饋 Guides**——寫給模型讀的指引,靠模型自願遵守。想要**代碼層真的擋得住**,不靠模型自覺,用 **`outcome-check-harness`**——裝一個 `Stop` hook,agent 想跳過驗收也跳不過。這是手動安裝的工具(不是自動觸發的技能),因為它會修改目標專案的持續性配置(`.claude/settings.json`),必須明確授權才能裝。細節見 [`outcome-check-harness/README.md`](../outcome-check-harness/README.md)。
+`outcome-check` 是**前饋 Guides**——寫給模型讀的指引,靠模型自願遵守。想要**代碼層真的擋得住**,不靠模型自覺,用 **`outcome-check-harness`**——裝一個 `Stop` hook,agent 想跳過驗收也跳不過。這是手動安裝的工具(不是自動觸發的技能),因為它會修改使用者本機的持續性配置(`~/.claude/settings.json`),必須明確授權才能裝。**只裝一次、對所有專案生效,不會碰任何專案目錄**——驗收條件用 `set-rubric.ps1` 針對單一專案設定,寫在使用者本機,不進該專案的版控。細節見 [`outcome-check-harness/README.md`](../outcome-check-harness/README.md)。
 
 ## 與既有技能的分工
 
