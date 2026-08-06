@@ -59,9 +59,28 @@
 
 ⚠️ `disable-model-invocation` 確認是 Claude Code 支援的 frontmatter 欄位，**Antigravity 是否支援未經查證**。因此本組所有使用者可調用技能的 `description` 都寫成「人讀得懂、同時也能當觸發語」——欄位若被忽略，行為仍然正確，只是多付一份上下文負載。
 
+## 第二個來源：Harness Engineering（ihower）
+
+`outcome-check`、`bug-loop`／`implement` 的迭代上限、`skill-craft` 的 Bitter Lesson 三處，取自 [ihower 的 Harness Engineering 系列](https://ihower.tw/blog/13721-harness-engineering)（九篇，2026-06），跟 mattpocock/skills 是不同的來源，分開記錄避免混淆設計依據。
+
+### 學到的三個手法
+
+1. **獨立性光譜**——文章把驗收機制排成一條光譜：自我審計（零獨立性）→ 獨立小模型裁判（中等）→ 全新 context 的 grader 實際操作產出（最大獨立性）。本組原本所有完成判準都是自我審計那一端，`outcome-check` 補上獨立性最大的那一端。核心引句：「調出一個挑剔的獨立評估者，比教會 agent 自我批判容易得多」。
+2. **Loop 與 Goal 分開管**——「Loop 管何時跑，Goal 管做到什麼程度才停」，只有 loop 沒 goal 會一直重跑到圈數上限。這正好呼應 `global-rules` §8 早就有、但 `bug-loop` 沒接上的「連續失敗 3 次停止」，於是把迭代上限明確寫回 `bug-loop` 與 `implement`。
+3. **Bitter Lesson**——「開發者該做的是每次新模型發布時刪掉大半程式碼，不是越積越厚」。這正好是 `skill-craft` 既有的**沉積**失敗模式缺的那個「主動觸發時機」，補一節提醒。
+
+### 刻意不學的
+
+| 原文做法 | 為什麼不搬進來 |
+|---------|---------------|
+| 固定評測集、退步測試集、晉級關卡等 Meta-Harness 七項前提 | 那是給有 CI/eval pipeline 的團隊用的重量級機制；本組是單人 agent-assisted 開發的輕量工具，硬套會變成沒人維護的裝飾 |
+| Ralph／Symphony／Cron 的外層排程框架 | 本組的 `to-tickets` + 每張票開新 session 已經是同一個精神（進度存磁碟不存 context），不需要另建一層排程機制 |
+| 框架選型（Codex SDK／LangGraph／Strands 等） | 那是「自建 agent runtime」的決策，本組是套在既有 Claude Code／Antigravity 上的技能，不適用 |
+
 ---
 **最後更新**: 2026-08-04
 **維護者**: 開發團隊
-**文件版本**: v1.0
+**文件版本**: v2.0
 **變更記錄**（里程碑，最多 5 條）:
+- v2.0 (2026-08-04): 新增第二個來源 ihower 的 Harness Engineering 系列——`outcome-check`、迭代上限、Bitter Lesson 三處設計依據，與刻意不學的三項
 - v1.0 (2026-08-04): 首版，記錄九個學到的手法與四項刻意不學的差異

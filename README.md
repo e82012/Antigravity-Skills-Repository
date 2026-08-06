@@ -98,20 +98,21 @@
 - **手動觸發**：僅在使用者明確要求時啟動，不因方案看起來複雜就自行判斷該不該叫 Gemini。
 
 ### 14. [工程流程技能組 (Engineering Flow)](./skill-map/SKILL.md)
-**「想法 → 出貨，每一步都停在一個驗得出來的判準上。」** 14 個小而可組合的技能，改編自 [mattpocock/skills](https://github.com/mattpocock/skills)（MIT）。
+**「想法 → 出貨，每一步都停在一個驗得出來的判準上。」** 15 個小而可組合的技能，改編自 [mattpocock/skills](https://github.com/mattpocock/skills)（MIT）與 [ihower 的 Harness Engineering 系列](https://ihower.tw/blog/13721-harness-engineering)。
 
 - **兩種調用模式**：`disable-model-invocation` 把「要不要讓模型看到」變成明碼標價的取捨——保留 description 付上下文負載，拿掉則由人當索引。
 - **原語＋包裝層**：`grilling` 是唯一的拷問本體，`grill-me`／`grill-with-docs` 只是兩個包裝層，改一次全部生效。
-- **回饋迴路優先**：`bug-loop` 沒拿到一條會亮**紅燈**的緊迴路，就禁止進入假設階段——先腦補理論再找證據，從流程層擋掉。
+- **回饋迴路優先**：`bug-loop` 沒拿到一條會亮**紅燈**的緊迴路，就禁止進入假設階段——先腦補理論再找證據，從流程層擋掉；假設整批驗證失敗滿 3 輪，依全局準則 §8 停下來問人，不無限重跑。
 - **雙軸平行審查**：`diff-review` 把規範軸與規格軸拆給兩個 sub-agent 並行，避免 context 互相污染；判斷準則直接引用既有的 `code-review`，不重抄。
+- **獨立產出驗收**：`outcome-check` 派一個**全新 context** 的裁判實際操作產出（跑 API、開網頁、查資料庫），不是重讀程式碼——教會 agent 自我批判很難，找一個不受「作者覺得自己做對了」影響的裁判容易得多。`implement` 收尾自動接上，也能單獨手動叫。
 - **從哪開始**：忘記該用哪個就叫 [`skill-map`](./skill-map/SKILL.md)（路由）；想改技能先讀 [`skill-craft`](./skill-craft/SKILL.md)（方法論本體＋詞彙表）。
-- **使用說明**：落地方式、技能速查表、三個實戰劇本與狀況排除，見 [使用說明](./skill-map/resources/usage-guide.md)。
+- **使用說明**：落地方式、技能速查表、四個實戰劇本與狀況排除，見 [使用說明](./skill-map/resources/usage-guide.md)。
 
 | 分層 | 技能 |
 |------|------|
 | 路由與方法論 | `skill-map`、`skill-craft` |
 | 對齊 | `grilling`（原語）、`grill-me`、`grill-with-docs`、`domain-language` |
-| 執行 | `tdd`、`bug-loop`、`diff-review` |
+| 執行 | `tdd`、`bug-loop`、`diff-review`、`outcome-check` |
 | 流程 | `setup-flow`、`to-spec`、`to-tickets`、`implement`、`handoff` |
 
 ---
@@ -247,10 +248,11 @@ AntiGravity-Skill/
 ├── bug-loop/               # 除錯：回饋迴路優先於推理
 │   └── resources/          # feedback-loops.md：十種造迴路的方式
 ├── diff-review/            # 雙軸差異審查（規範軸 × 規格軸，平行 sub-agent）
+├── outcome-check/          # 獨立產出驗收：全新 context 裁判實際操作，非自我審計
 ├── setup-flow/             # 流程初始化：議題追蹤與領域文件配置
 ├── to-spec/                # 把對話收斂成規格
 ├── to-tickets/             # 切成曳光彈工單，標明阻擋邊
-├── implement/              # 依票實作：tdd → diff-review → commit
+├── implement/              # 依票實作：tdd → diff-review → outcome-check → commit
 ├── handoff/                # 交棒：把對話壓成檔案，換新 session 接手
 │   # ───────────────────────────────────────────────
 │
@@ -271,8 +273,9 @@ AntiGravity-Skill/
 ---
 **最後更新**: 2026-08-04
 **維護者**: 開發團隊
-**文件版本**: v3.0
+**文件版本**: v3.1
 **變更記錄**（里程碑，最多 5 條）:
+- v3.1 (2026-08-04): 新增第 15 個技能 `outcome-check`（改編自 ihower 的 Harness Engineering 系列）——全新 context 裁判實際操作驗收，`implement` 收尾接上；`bug-loop`／`implement` 補迭代上限呼應全局準則 §8
 - v3.0 (2026-08-04): 新增工程流程技能組共 14 個技能（改編自 mattpocock/skills，MIT），涵蓋路由、方法論、對齊、執行與流程五層；首次引入「使用者可調用 vs 模型可調用」的雙負載設計，以及原語＋包裝層的單一真實來源結構
 - v2.1 (2026-07-30): 新增第 13 個技能 `gemini-redteam`（Claude Code × Gemini CLI 紅藍對抗審查），目錄結構同步補上
 - v2.0 (2026-07-23): 新增 `tools/sync-skills.ps1` 跨代理同步工具與本機工具速查表；新增「讓 Claude Code 套用全局準則」章節；global-rules 升級為跨代理規則本體並隨附五份參考知識

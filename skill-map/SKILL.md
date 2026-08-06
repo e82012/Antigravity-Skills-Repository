@@ -22,7 +22,7 @@ disable-model-invocation: true
    - **是** → **`to-spec`**（把對話收斂成規格），再 **`to-tickets`** 切成曳光彈工單，每張票標明阻擋邊。然後**每張票開一個乾淨 session** 跑 **`implement`**。
    - **否** → 直接在同一個 context 裡 **`implement`**。
 
-   兩條路都一樣：**`implement`** 內部驅動 **`tdd`** 一片一片跑紅綠，收尾跑 **`diff-review`** 雙軸審查，過了才 commit。只想單獨測一個具體行為就直接叫 `tdd`；只想審一個分支就直接叫 `diff-review`。
+   兩條路都一樣：**`implement`** 內部驅動 **`tdd`** 一片一片跑紅綠，收尾跑 **`diff-review`** 雙軸審查，再跑 **`outcome-check`** 派一個全新 context 的裁判實際操作驗收，過了才 commit。只想單獨測一個具體行為就直接叫 `tdd`；只想審一個分支就直接叫 `diff-review`；只想確認一個已完成的東西真的能用就直接叫 `outcome-check`。
 
 ### Context 衛生
 
@@ -35,6 +35,8 @@ disable-model-invocation: true
 - **東西壞了** → **`bug-loop`**。專治難搞的：一眼看不出來的、間歇性飄的、在兩個已知良好狀態之間偷偷跑進來的回歸。它在拿到一條**緊**的回饋迴路（一行已經對這個 bug 亮過紅燈的指令）之前，拒絕開始推理。
 
 - **需要一份共同語言** → **`domain-language`**。這是 `grill-with-docs` 在背後驅動的那套紀律，也可以單獨叫：某個詞很模糊、某個詞同時指三件事、某個難以回頭的決策該被釘成 ADR 的時候。
+
+- **確認一個東西真的做完了、能用** → **`outcome-check`**。不限於剛實作完——別人交來的東西、很久以前做的功能忽然要驗，都能單獨叫。裁判永遠是**全新 context**，不是你自己判自己。
 
 ## 詞彙層
 
@@ -54,7 +56,8 @@ disable-model-invocation: true
 
 | 需求 | 用這個 | 為什麼不是另一個 |
 |------|--------|-----------------|
-| 審查一次改動 | `diff-review` | 它是**流程**（釘定點、雙軸、平行 sub-agent）；判斷準則與五級回饋在 `code-review`，`diff-review` 直接引用不重抄 |
+| 審查一次改動**寫得對不對** | `diff-review` | 它是**流程**（釘定點、雙軸、平行 sub-agent）；判斷準則與五級回饋在 `code-review`，`diff-review` 直接引用不重抄 |
+| 驗收一個產出**跑起來對不對** | `outcome-check` | `diff-review` 讀 diff，這個實際操作（跑 API、開網頁、查資料庫）——兩者互補不互斥，一次交付兩個都跑 |
 | 判斷某段程式碼好不好 | `code-review` | 那是判斷準則本身 |
 | 把需求變成分析報告 | `feature-analysis-skill` | 那是分析交付物；`to-spec` 產的是給 `to-tickets` 吃的規格 |
 | 把需求變成 API 規格 | `restful-api-spec-writer` | 那是介面定義；`to-spec` 是行為與接縫 |

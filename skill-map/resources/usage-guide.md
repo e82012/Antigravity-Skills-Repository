@@ -75,7 +75,8 @@ pwsh -File tools\sync-skills.ps1 -Mode skills -Target claude
 | `domain-language` | **代理可自動觸發** | 出現新詞、一詞多義、難回頭的決策 |
 | `tdd` | **代理可自動觸發** | 要測試先行地建一個行為 |
 | `bug-loop` | **代理可自動觸發** | 東西壞了、變慢了、間歇性失敗 |
-| `diff-review` | **代理可自動觸發** | commit 前要審這次改動 |
+| `diff-review` | **代理可自動觸發** | commit 前要審這次改動**寫得對不對** |
+| `outcome-check` | **代理可自動觸發** | 要確認一個產出**跑起來對不對**——`implement` 收尾會自動叫它，也能單獨手動叫 |
 
 **手動** = 只有你打出名字才叫得動，代理看不見它，其他技能也叫不動它，**不佔 context**。
 **代理可自動觸發** = 代理判斷相關時會自己拿起來用，其他技能也叫得動，代價是那行描述常駐 context。
@@ -102,7 +103,8 @@ pwsh -File tools\sync-skills.ps1 -Mode skills -Target claude
 
   做得完 ──→ 你：implement
                 └─ 內部驅動 tdd 一片一片紅綠
-                └─ 收尾自動跑 diff-review
+                └─ 收尾自動跑 diff-review（審 diff 寫得對不對）
+                └─ 再自動跑 outcome-check（派全新 context 裁判實際操作驗收）
                 └─ 過了才 commit
 
   做不完 ──→ 你：to-tickets
@@ -138,6 +140,21 @@ pwsh -File tools\sync-skills.ps1 -Mode skills -Target claude
     └─ 兩軸並排輸出，不混排
 ```
 
+### 劇本 D：確認一個東西真的能用
+
+```text
+你：outcome-check
+    這個結帳功能上禮拜做完的，幫我確認真的沒問題
+
+    └─ 它先問你驗收條件在哪（工單、規格，或你當場講）
+    └─ 派一個全新 context 的裁判——不是你自己判自己
+    └─ 裁判實際操作：開網頁走一次結帳流程 / 打 API / 查訂單表
+       不是重讀那次的程式碼
+    └─ 逐條回報：通過 / 不通過 / 無法判定，各附證據
+```
+
+**跟 `diff-review` 的差別**：`diff-review` 讀 diff，回答「寫得對不對」；`outcome-check` 操作產出，回答「跑起來對不對」。一個只讀過程式碼、沒實際跑起來驗過的功能，`diff-review` 審過也不代表能用——這正是本劇本存在的理由。
+
 ---
 
 ## 五、Context 衛生
@@ -164,6 +181,8 @@ pwsh -File tools\sync-skills.ps1 -Mode skills -Target claude
 | 拷問問到一半覺得太囉嗦 | 說「剩下的你自己決定，把假設列出來給我看」。它會停止逐題問，改成一次列出假設 |
 | `bug-loop` 卡在階段 1 出不來 | **這通常是對的**——它在告訴你這個 bug 目前沒有可靠的重現方式。它會列出試過什麼，然後跟你要環境存取權或證物 |
 | `diff-review` 說找不到規格來源 | 給它工單連結或規格檔路徑。**不要叫它「自己判斷需求是什麼」**——那等於讓它自己出題自己改考卷 |
+| `outcome-check` 也找不到驗收條件 | 同上，當場給幾條可操作的判準。**不要讓寫程式的那個 agent 順手兼裁判**——那就失去獨立性了 |
+| `implement` 收尾跑很久 | `outcome-check` 是實際操作（開網頁、打 API），比讀 diff 慢是正常的。連續 3 輪不過會自動停下來問你，不會無限重跑 |
 | 想改某個技能的行為 | 先讀 `skill-craft`。特別注意：拷問的行為只在 `grilling` 一個地方，改那裡就好，不要去改兩個包裝層 |
 | 技能太多記不住 | 叫 `skill-map` |
 
@@ -173,7 +192,8 @@ pwsh -File tools\sync-skills.ps1 -Mode skills -Target claude
 
 | 你要的 | 用這個 | 不是那個，因為 |
 |--------|--------|---------------|
-| 審一次改動的**流程** | `diff-review` | `code-review` 是判斷準則本身，`diff-review` 引用它、不重抄 |
+| 審一次改動**寫得對不對** | `diff-review` | `code-review` 是判斷準則本身，`diff-review` 引用它、不重抄 |
+| 驗收一個產出**跑起來對不對** | `outcome-check` | `diff-review` 讀 diff；這個實際操作，兩者互補，一次交付都跑 |
 | 判斷某段程式碼**好不好** | `code-review` | 那就是準則的家 |
 | 需求 → **分析報告** | `feature-analysis-skill` | `to-spec` 產的是餵給 `to-tickets` 的規格，不是給人讀的分析 |
 | 需求 → **API 規格** | `restful-api-spec-writer` | `to-spec` 寫的是行為與接縫，不是介面定義 |
@@ -191,6 +211,7 @@ pwsh -File tools\sync-skills.ps1 -Mode skills -Target claude
 ---
 **最後更新**: 2026-08-04
 **維護者**: 開發團隊
-**文件版本**: v1.0
+**文件版本**: v1.1
 **變更記錄**（里程碑，最多 5 條）:
+- v1.1 (2026-08-04): 新增 `outcome-check`（劇本 D）——`implement` 收尾自動接上，也能單獨手動叫；技能速查表、常見狀況、跟既有技能並用三處同步補上與 `diff-review` 的分工
 - v1.0 (2026-08-04): 首版，收錄落地方式、技能速查表、三個實戰劇本、Context 衛生與狀況排除
