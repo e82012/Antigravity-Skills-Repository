@@ -117,6 +117,14 @@
 
 **`outcome-check` 只是 Guides**——寫給模型讀的指引，靠模型自願遵守。要代碼層真正擋得住，用 [`outcome-check-harness`](./outcome-check-harness/README.md)：裝一個 Claude Code 的 `Stop` hook，模型想跳過驗收也跳不過。**只裝一次、對所有專案生效，不會碰任何專案目錄**——驗收條件用 `set-rubric.ps1` 針對單一專案設定，寫在使用者本機，不進該專案版控。這是需要明確授權才能安裝的工具，不是自動觸發的技能。第一版曾經把驗收條件放在專案目錄裡，拿真實專案測試後發現會被 `git status` 追蹤進去，已改成現在這個設計——過程與教訓見該工具自己的 README。
 
+### 15. [MK 整併差異檢查 (MK Merge Diff Check)](./mk-merge-check/SKILL.md)
+**「輸出一致就算過，哪怕架構全變。」** 專責檢查整併基底 MKBackground 與 13 個原版獨立專案的程式碼內容與最終輸出差異，並據以修正 MK 整併。
+
+- **路由 URI 錨點**：同一支端點兩邊方法名常不同（`origin` vs `originCagentcheckList`），一律以路由 URI 錨定整條呼叫鏈，禁止方法名對方法名。
+- **雙軸驗證**：靜態比對呼叫鏈（tokenizer 抽方法本體 → 逐邏輯語意判定），動態繞過 HTTP／Sanctum 直接呼叫 service 比對最終輸出。
+- **嚴謹比對**：禁用行數／字串數量／筆數等淺層代理指標；程式碼比語意、輸出比正規化後逐鍵逐值深比對，全量不抽樣、防假一致。
+- **DB 同源前置閘門**：跑動態前先確認兩邊 `.env` 連同一個 DB，否則測出的全是資料差異而非整併差異。
+
 ---
 
 ## 🛠️ 安裝與使用說明
@@ -262,6 +270,9 @@ AntiGravity-Skill/
 │   └── set-rubric.ps1      # 對單一專案啟用／查看／停用，寫在使用者本機
 │   # ───────────────────────────────────────────────
 │
+├── mk-merge-check/         # MK 整併差異檢查與修正（路由錨點、靜態＋動態雙軸、嚴謹深比對）
+│   └── references/         # 架構、站台對照、流程、嚴謹反模式、分級、驗證工具撰寫指引
+│
 ├── tools/                  # 同步工具
 │   ├── sync-skills.ps1     # 全局準則／技能一鍵同步到 Claude、Gemini、Codex
 │   └── README.md           # 用法、退出碼、刻意不做什麼
@@ -277,12 +288,12 @@ AntiGravity-Skill/
 | `tools/sync-skills.ps1` | 把本倉庫的全局準則與技能覆蓋到 Claude Code／Gemini Antigravity／Codex | [tools/README.md](./tools/README.md) |
 
 ---
-**最後更新**: 2026-08-06
+**最後更新**: 2026-08-26
 **維護者**: 開發團隊
-**文件版本**: v3.2
+**文件版本**: v3.3
 **變更記錄**（里程碑，最多 5 條）:
+- v3.3 (2026-08-26): 新增第 15 個技能 `mk-merge-check`——專責檢查整併基底 MKBackground 與 13 個原版專案的程式碼與輸出差異並據以修正整併；以路由 URI 錨點解呼叫鏈（禁方法名對名）、靜態（tokenizer 抽方法逐邏輯判定）＋動態（繞過 auth 直呼 service 比最終輸出）雙軸驗證、正規化逐鍵逐值深比對且禁用淺層代理指標
 - v3.2 (2026-08-06): 新增 `outcome-check-harness`——把 `outcome-check` 從提示詞層的 Guides 做成 Claude Code Stop hook 的代碼層 Sensor，全域安裝一次即對所有專案生效，不碰任何專案目錄；經端到端實測（含真實專案）修正三個真實 bug
 - v3.1 (2026-08-04): 新增第 15 個技能 `outcome-check`（改編自 ihower 的 Harness Engineering 系列）——全新 context 裁判實際操作驗收，`implement` 收尾接上；`bug-loop`／`implement` 補迭代上限呼應全局準則 §8
 - v3.0 (2026-08-04): 新增工程流程技能組共 14 個技能（改編自 mattpocock/skills，MIT），涵蓋路由、方法論、對齊、執行與流程五層；首次引入「使用者可調用 vs 模型可調用」的雙負載設計，以及原語＋包裝層的單一真實來源結構
-- v2.1 (2026-07-30): 新增第 13 個技能 `gemini-redteam`（Claude Code × Gemini CLI 紅藍對抗審查），目錄結構同步補上
-- v1.0–v2.0 (2026-01-22～2026-07-23): 首版建立技能模組索引，至新增跨代理同步工具、global-rules 升級為跨代理規則本體
+- v1.0–v2.1 (2026-01-22～2026-07-30): 首版建立技能模組索引，至新增跨代理同步工具、`gemini-redteam`、global-rules 升級為跨代理規則本體
