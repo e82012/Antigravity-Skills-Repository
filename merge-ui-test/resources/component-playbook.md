@@ -157,6 +157,10 @@ const v = d.querySelector('.rc-virtual-list-holder');
 `data_{平台}_{遊戲}`）。**這是本站最可靠的定位錨點**，也是策略 C（Re-test 腳本化）的基礎——
 盤點時務必把 id 記進頁面文件的操作步驟章節。
 
+**輸入前必須先清空。** `computer type` 是附加而非取代：實測 `#point` 原有預設值 `0`，
+直接輸入 `500` 得到 `"0500"` `[實測]`。點擊欄位後先 `key` 送 `ctrl+a`（或確認欄位為空）
+再輸入，並在驗證時**比對完整值**而非只看「有沒有字」。
+
 `form_input` 對原生 `input` 有效；對 antd Select 無效（不是原生 `<select>`，直接設值不會
 觸發 React onChange）`[通例]`。
 
@@ -193,8 +197,9 @@ const v = d.querySelector('.rc-virtual-list-holder');
 ---
 **最後更新**: 2026-09-09
 **維護者**: 開發團隊
-**文件版本**: v1.3
+**文件版本**: v1.4
 **變更記錄**（里程碑，最多 5 條）:
+- v1.4 (2026-09-09): §3 補「輸入前必須清空」——`type` 是附加不是取代，實測預設值 `0` 加輸入 `500` 得到 `0500`
 - v1.3 (2026-09-09): 前置檢查判準放寬為「命中點在同一個 Select 容器內」（已有值時 `selection-item` 會蓋住 combobox，但點擊仍有效）；新增 §2.5 定位錨點穩定性——`rc_select_N` 跨渲染會變不可當錨點
 - v1.2 (2026-09-09): 補 Select 開啟後以 `aria-owns` 驗明身分（一頁多個同型 Select 會開錯而不自知）；補 `Escape` 關不掉下拉；§7 補 Radio 點擊目標與「切換可能觸發 API」實例
 - v1.1 (2026-09-09): §1 訂正 Select 點擊目標——改為 `[role=combobox]` 的 input（selector 中心在多選時落在 `selection-overflow` 不觸發）；補容器定位需用 class token 比對；`aria-expanded` 不可當成功訊號
