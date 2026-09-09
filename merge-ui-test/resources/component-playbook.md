@@ -69,11 +69,16 @@ const r = c.getBoundingClientRect();
 const cx = Math.round(r.x+r.width/2), cy = Math.round(r.y+r.height/2);
 ({ center: [cx, cy],
    disabled: /select-disabled/.test(sel.className),
-   hitsCombobox: document.elementFromPoint(cx, cy) === c })   // false 就別點
+   // 判準是「命中點落在同一個 Select 容器內」，不是「等於 combobox 本身」
+   inSameSelect: sel.contains(document.elementFromPoint(cx, cy)) })   // false 才別點
 ```
 
-`hitsCombobox === false` 代表該座標被別的元素蓋住（常見於 pane 過窄時側邊選單抽屜覆蓋表單）
-`[實測]`。**先解決遮蔽再點，不要硬點。**
+已有值的 Select，`selection-item`（顯示值那個 span）會蓋在 combobox 上方 `[實測]`，
+此時 `elementFromPoint !== combobox` 但**點下去照樣有效**——它屬於同一個控制項。
+只有命中點落到 Select 容器**之外**時才是真的被遮蔽（常見於 pane 過窄時側邊選單抽屜覆蓋表單）
+`[實測]`，那才要先解決遮蔽再點。
+
+座標記得依 `browser-recipes.md` §1 換算成截圖座標系。
 
 ### 開啟後必須驗明身分
 
@@ -138,6 +143,14 @@ const v = d.querySelector('.rc-virtual-list-holder');
 定位建議：優先用 `type`（`submit`）、`id`，其次用 `innerText` 去空白後比對，
 最後才用 `find`。
 
+## 2.5 定位錨點的穩定性
+
+`rc_select_N` 這類自動編號 id **跨渲染會變** `[實測]`：同一個語言選單前後兩次載入分別是
+`rc_select_22` 與 `rc_select_0`。**不可當錨點。**
+
+穩定的是語意 id：`memId`、`name`、`point`、`cagent_uid`、`game_rebate_{平台id}`、
+`data_{平台}_{遊戲}`。沒有語意 id 的元件（例如頁首語言選單）改用「值或鄰近文字」定位。
+
 ## 3. Form 欄位
 
 `[實測]` 表單 input 帶穩定 `id`（`memId`、`name`、`point`、`game_rebate_{平台id}`、
@@ -180,8 +193,9 @@ const v = d.querySelector('.rc-virtual-list-holder');
 ---
 **最後更新**: 2026-09-09
 **維護者**: 開發團隊
-**文件版本**: v1.2
+**文件版本**: v1.3
 **變更記錄**（里程碑，最多 5 條）:
+- v1.3 (2026-09-09): 前置檢查判準放寬為「命中點在同一個 Select 容器內」（已有值時 `selection-item` 會蓋住 combobox，但點擊仍有效）；新增 §2.5 定位錨點穩定性——`rc_select_N` 跨渲染會變不可當錨點
 - v1.2 (2026-09-09): 補 Select 開啟後以 `aria-owns` 驗明身分（一頁多個同型 Select 會開錯而不自知）；補 `Escape` 關不掉下拉；§7 補 Radio 點擊目標與「切換可能觸發 API」實例
 - v1.1 (2026-09-09): §1 訂正 Select 點擊目標——改為 `[role=combobox]` 的 input（selector 中心在多選時落在 `selection-overflow` 不觸發）；補容器定位需用 class token 比對；`aria-expanded` 不可當成功訊號
 - v1.0 (2026-09-08): 建立元件手冊，Select／Button／Form／Modal／Table／Radio 章節以 sndams.ds88.tw 實測資料為據，未驗證項標記為通例
