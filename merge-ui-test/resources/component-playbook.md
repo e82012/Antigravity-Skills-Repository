@@ -44,7 +44,8 @@ const q=s=>[...document.querySelectorAll(s)];
 
 input 寬度可能只有 4px（多選未輸入時實測 `w:4`，且位置在選單框最左端而非中央），
 **不要用選單框的中心座標**，要用 input 自己的 `getBoundingClientRect()`，
-再依 `browser-recipes.md` §1 換算成截圖座標系。
+再依 `browser-recipes.md` §1.2 換算成截圖座標系。
+（先試 `read_page` 給的 ref，能直接命中 combobox 就不必走換算這條。）
 
 選項節點沒有 `role="option"`、沒有 `id` `[實測]`，AX tree 看不到，`find` 也定位不到。
 
@@ -78,7 +79,7 @@ const cx = Math.round(r.x+r.width/2), cy = Math.round(r.y+r.height/2);
 只有命中點落到 Select 容器**之外**時才是真的被遮蔽（常見於 pane 過窄時側邊選單抽屜覆蓋表單）
 `[實測]`，那才要先解決遮蔽再點。
 
-座標記得依 `browser-recipes.md` §1 換算成截圖座標系。
+走座標路線時記得依 `browser-recipes.md` §1.2 換算成截圖座標系；ref 點擊不需換算。
 
 ### 開啟後必須驗明身分
 
@@ -223,16 +224,131 @@ triple_click 該 input  →  type "2026-07-12"  →  key Enter
 （玩家帳號／暱稱／點數 → 機臺所在區域／MAC 地址／Anydesk 登入位址與密碼）並觸發 API `[實測]`。
 盤點時不可因為「看起來像切換」就填 `N/A`，要依計畫書 §4.5 實際看有沒有發 API。
 
+## 表單驗證訊息會把送出鈕往下推
+
+antd 的 `form-item-explain` 是**插入**到欄位下方，不是覆蓋，整個表單會因此變高。
+第一次按送出觸發驗證後，「確定」「提 交」的位置就變了——用舊座標再點一次會落空，
+看起來像「按了沒反應」。
+
+實測：某彈窗的「確 定」在驗證訊息出現後由 y=367 掉到 y=413，兩次點擊都沒中，
+差點誤判成按鈕失效。
+
+**每次按送出前重新量一次座標**，尤其是「第一次沒過、要再送一次」的時候。
+判 `FAIL` 之前先確認自己點到的是不是還在原地的那顆按鈕。
+
+## 彈窗沒捲到底，量到的驗證訊息是殘缺的
+
+必填驗證的訊息數量是常用的比對依據，但**未捲動的彈窗只渲染得到視窗內那一段**，
+落在下方的欄位量不到 `has-error`，也讀不到 `form-item-explain`。
+
+實測差點釀成誤判：某彈窗 `scrollHeight` 1253px、視窗 885px，未捲動時合併站量到 5 條訊息、
+原站量到 6 條，看起來是「合併站少一條驗證」——是個很像真的站別差異。
+捲動 `[class*=-modal-wrap]` 到底重測後，兩站都是 7 個欄位、訊息完全相同。
+
+**要拿驗證訊息當比對證據，先確認彈窗已捲到底**，並且兩站都要在同樣的捲動狀態下量。
+數量對不上時，第一個要排除的是自己沒捲，不是對方少了功能。
+
+## 操作連結可能既不是 `button` 也不是 `a`
+
+明細頁的「修改」「刪除」實測是帶 `cursor-pointer` 的 `span`（清單頁的「查看」則是 `p`），
+`querySelectorAll('button,a')` 一個都找不到，AX 樹也拿不到 ref。
+
+穩定的做法是走文字節點再取父元素：
+
+```js
+const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+const out = []; let n;
+while (n = w.nextNode()) {
+  if (n.nodeValue.trim() === '修改') {
+    const q = n.parentElement.getBoundingClientRect();
+    if (q.width) out.push({x: Math.round((q.x + q.width / 2) * 800 / 1440),
+                           y: Math.round((q.y + q.height / 2) * 492 / 900)});
+  }
+}
+```
+
+比對 `element.innerText` 會匹配到一整串外層容器（見 §2.5），文字節點只會命中真正承載那段字的元素。
+
+## `browser_batch` 的滑鼠動作吃的是 front tab，不是 tabId
+
+`javascript_tool` 帶 `tabId` 就作用在那個分頁，但 `computer` 的點擊與截圖**只認當下被 front 的分頁**。
+雙站比對時很容易中招：批次裡先 `computer{screenshot}` 再 `computer{left_click}`，
+如果前一次操作把另一站 front 起來了，這一批動作會整個打在錯的站上。
+
+實測：一批「截圖 → 點查看 → 讀結果」的動作，截圖與點擊落在原站、
+`javascript_tool` 卻回報合併站沒有變化，看起來像「合併站的按鈕沒反應」。
+
+**批次的第一個動作放 `tabs_select`**，或每次換站後重新 `tabs_select` 再截圖。
+判「按了沒反應」之前，先確認自己點在哪一站。
+
+## `closest('[class*=-select]')` 會抓到錯的層級
+
+Select 內層的搜尋框 class 是 `custom-modal-select-selection-search-input`——**它也含 `-select`**。
+從 `#someId` 往上找 `[class*=-select]` 會停在這個 input，讀出來的選取值永遠是空字串，
+看起來像「選了沒生效」。
+
+實測：確認 `#target_group` 是否選到值時讀出 `""`，差點判成選取失效；
+改以 class token 精確比對後讀到正確的 `testwinwin01`。
+
+```js
+let box = document.getElementById('target_group');
+while (box && !String(box.className).split(/\s+/).includes('custom-modal-select'))
+  box = box.parentElement;
+const picked = [...box.querySelectorAll('[class*=selection-item]')]
+  .map(e => e.getAttribute('title') || e.innerText.trim());
+```
+
+同一個陷阱也適用 `[class*=-modal]`、`[class*=-form-item]` 等前綴比對：
+**元件庫的內層節點常把父層 class 當前綴延伸**，用 `class*=` 找祖先前先確認會不會半路停下。
+
+## 缺欄位之前，先確認不是「只掃 label」造成的
+
+比對兩站表單欄位時，`querySelectorAll('label')` 的差集很容易產生假性缺漏——
+同一個欄位標題，一邊用 `<label>`、另一邊可能用 `<span class="...typography">`。
+
+實測：某彈窗以 label 差集算出合併站少「站內信文案」，
+改以彈窗全文 `innerText.includes()` 比對後發現兩站都有這四個字，欄位本身也都在，
+只是承載元素型別不同——**不算漏缺**。
+
+判缺欄位要同時滿足三件事，缺一就不是漏缺：
+
+1. 文字不在彈窗全文裡（`m.innerText.includes(名稱)` 為 false）
+2. 對應的控制項 id 不存在（`m.querySelector('#field_id')` 為 null）
+3. 換過會影響條件渲染的選項後仍不出現（例如切換「發送對象」再看一次）
+
+## 提交鈕按下去只是叫出確認框，不是送出
+
+有些表單的「提 交」會先跳一個提示彈窗，按了彈窗的按鈕才真正送出請求。
+沒察覺的話會看到：表單還在編輯模式、值沒變、`form-item-explain` 沒有錯誤——
+一切都像「按鈕失效」。
+
+實測：遊戲平台設置的提交會先跳「例行維護時間起迄皆為 00:00:00…」＋「知道了」，
+按完才送 `PUT`。而且那個彈窗**正好蓋在頁尾提交鈕上**，
+再次量測時 `elementFromPoint` 回傳的是 `DIV|ant-modal-wrap`。
+
+按下提交後先確認有沒有新的彈窗：
+
+```js
+const m = document.querySelector('.ant-modal-wrap, [class*=modal-wrap]');
+m && m.innerText.replace(/\s+/g, ' ').slice(0, 80);
+```
+
+**確認框的 class 前綴可能與全站不同**——該站主體是 `custom-modal-`，
+這個提示框卻是原生的 `ant-`，選擇器不能直接沿用環境探針記下的前綴。
+
 ---
-**最後更新**: 2026-09-09
+**最後更新**: 2026-09-10
 **維護者**: 開發團隊
-**文件版本**: v1.7
+**文件版本**: v2.2
 **變更記錄**（里程碑，最多 5 條）:
+- v2.2 (2026-09-10): 新增「提交鈕按下去只是叫出確認框」——確認框會蓋住提交鈕且 class 前綴可能與全站不同
+- v2.1 (2026-09-10): 新增「closest 前綴比對會抓到錯的層級」與「缺欄位的三項判準」——後者實測擋下一次假性漏缺（label 對 span 的差異）
+- v2.0 (2026-09-10): 新增「browser_batch 的滑鼠動作吃的是 front tab」——雙站比對時點擊會落到錯的站，偽裝成「按了沒反應」
+- v1.9 (2026-09-10): 新增「彈窗沒捲到底，量到的驗證訊息是殘缺的」與「操作連結可能既不是 button 也不是 a」——前者實測差點誤判成站別差異，後者需以 TreeWalker 走文字節點定位
+- v1.8 (2026-09-10): 新增「表單驗證訊息會把送出鈕往下推」——驗證後版面變高，舊座標會落空，送出前必須重量
 - v1.7 (2026-09-09): §6 DatePicker 由通例改為實測——改日期用 `triple_click` ＋ 輸入 ＋ Enter，`ctrl+a` 無效會插入原值中間；訖日可能被自動調整，兩欄都要重讀確認
 - v1.6 (2026-09-09): §3 補「送出前必須等 React commit」——實測因未等待而送出舊表單狀態，差點把正常功能誤判為 FAIL
 - v1.5 (2026-09-09): §5 補 Pro Table 實測——列內操作連結可能是 `<p>` 而非 `button`／`a`，AX 樹定位不到；分頁資訊可與 API `total_records` 交叉驗證
 - v1.4 (2026-09-09): §3 補「輸入前必須清空」——`type` 是附加不是取代，實測預設值 `0` 加輸入 `500` 得到 `0500`
 - v1.3 (2026-09-09): 前置檢查判準放寬為「命中點在同一個 Select 容器內」（已有值時 `selection-item` 會蓋住 combobox，但點擊仍有效）；新增 §2.5 定位錨點穩定性——`rc_select_N` 跨渲染會變不可當錨點
-- v1.2 (2026-09-09): 補 Select 開啟後以 `aria-owns` 驗明身分（一頁多個同型 Select 會開錯而不自知）；補 `Escape` 關不掉下拉；§7 補 Radio 點擊目標與「切換可能觸發 API」實例
-- v1.1 (2026-09-09): §1 訂正 Select 點擊目標——改為 `[role=combobox]` 的 input（selector 中心在多選時落在 `selection-overflow` 不觸發）；補容器定位需用 class token 比對；`aria-expanded` 不可當成功訊號
-- v1.0 (2026-09-08): 建立元件手冊，Select／Button／Form／Modal／Table／Radio 章節以 sndams.ds88.tw 實測資料為據，未驗證項標記為通例
+- v1.0–v1.2 (2026-09-08～09-09): 元件手冊建立（Select／Button／Form／Modal／Table／Radio，以 sndams.ds88.tw 實測為據）；Select 點擊目標訂正為 `[role=combobox]` 的 input，並補 `aria-owns` 驗明身分、`Escape` 關不掉下拉、Radio 切換可能觸發 API
