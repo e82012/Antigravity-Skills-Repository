@@ -1,7 +1,7 @@
 # Git 完整手冊
 
 > 基於 [git-scm.com/docs](https://git-scm.com/docs) 官方文件整理
-> 版本：2026-05-13
+> 版本：2026-10-30
 
 > ⚠️ 本檔為純指令查閱手冊，不含執行權限規則。危險操作（`branch -D`、`push --force`、
 > `reset --hard`、`clean -f`、`worktree remove` 等）會造成不可逆的損失，執行前一律先向
@@ -199,6 +199,21 @@ git commit -s -m "實作功能 X"
 ```
 
 類型：`feat` / `fix` / `chore` / `docs` / `refactor` / `test`
+
+**AI 代理不附署名**：AI 代理產生的 commit message 與 PR 描述，結尾只放內容本身，不附加 `Co-Authored-By` 或「Generated with ⋯」等 AI 署名。
+
+Claude Code 以全域設定 `~/.claude/settings.json` 關閉自動署名：
+
+```json
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}
+```
+
+`commit` 控制 commit 的 `Co-Authored-By` 尾行，`pr` 控制 PR 描述的署名，設為空字串即不附加。舊設定 `includeCoAuthoredBy` 已棄用。
 
 ### 3.4 查看差異（git diff）
 
@@ -990,8 +1005,9 @@ feature: A ← B ← E ← F ← D'
 *參考來源：[git-scm.com/docs](https://git-scm.com/docs)*
 
 ---
-**最後更新**: 2026-05-13
+**最後更新**: 2026-10-30
 **維護者**: 開發團隊
-**文件版本**: v1.0
+**文件版本**: v1.1
 **變更記錄**（里程碑，最多 5 條）:
+- v1.1 (2026-10-30): §3.3 新增「AI 代理不附署名」規則與 Claude Code `attribution` 設定方式
 - v1.0 (2026-05-13): 首版，依 git-scm.com 官方文件整理成純指令查閱手冊；危險操作的執行權限規則由各專案自訂
