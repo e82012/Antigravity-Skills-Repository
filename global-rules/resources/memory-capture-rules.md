@@ -24,7 +24,7 @@
 
 | 平台 | 專案名稱與類型標在哪 |
 |------|-------------------|
-| Claude Code memory | 檔名與 `name`：`proj-<專案名稱小寫>-<主題>`；`description` 開頭：`[MKBackground｜後台整併基底／Laravel]`；內文第一行：`專案：MKBackground（後台整併基底／Laravel）` |
+| Claude Code memory | 檔名與 `name`：`proj-<專案名稱小寫>-<主題>`；`description` 開頭：`[MKBackground｜後台整併基底／Laravel]`，整個值用雙引號包住（以 `[` 開頭的 YAML 值不加引號會被解析成陣列）；內文第一行：`專案：MKBackground（後台整併基底／Laravel）` |
 | Antigravity KI | `metadata.json` 的 `tags` 加 `project:<專案名稱>`、`project-type:<專案類型>`；`title` 前綴同 Claude Code |
 
 `MEMORY.md` 索引依「專案／環境／通則」分組，專案組內再依專案名稱分小組。
